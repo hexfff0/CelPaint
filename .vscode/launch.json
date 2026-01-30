@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Qt Build & Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CelPaint.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug",
+            "environment": [
+                {
+                    "name": "Path",
+                    "value": "C:\\Qt\\6.10.1\\mingw_64\\bin;${env:Path}"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/Qt/Tools/mingw1310_64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: Build"
+        }
+    ]
+}

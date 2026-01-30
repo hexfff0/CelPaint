@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug",
+                "--config",
+                "Debug",
+                "--target",
+                "all"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "env": {
+                    "Path": "C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\Tools\\CMake_64\\bin;C:\\Qt\\Tools\\Ninja;C:\\Qt\\6.10.1\\mingw_64\\bin;${env:Path}"
+                }
+            },
+            "problemMatcher": "$gcc"
+        }
+    ]
+}
