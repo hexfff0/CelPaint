@@ -6,9 +6,9 @@
 #include <QDialog>
 #include <QList>
 
-
 class QTableWidget;
 class QPushButton;
+class QSpinBox;
 
 class ColorReplaceDialog : public QDialog {
   Q_OBJECT
@@ -34,6 +34,7 @@ private slots:
 
   void onCellDoubleClicked(int row, int column);
   void onCellClicked(int row, int column);
+  void onSetAllToleranceClicked();
 
 private:
   QTableWidget *m_table;
@@ -42,6 +43,8 @@ private:
   QPushButton *m_btnClear;
   QPushButton *m_btnApplyCurrent;
   QPushButton *m_btnApplyAll;
+  QSpinBox *m_toleranceSpinner;
+  QPushButton *m_btnSetTolerance;
 
   void addRow(const QColor &src, const QColor &dest, bool enabled = true,
               int tolerance = 0);

@@ -6,7 +6,6 @@
 #include <QMainWindow>
 #include <QScrollArea>
 
-
 class ImageSequence;
 class ColorReplaceDialog;
 
@@ -28,6 +27,12 @@ protected:
   bool eventFilter(QObject *watched, QEvent *event) override;
   // Zoom support
   void wheelEvent(QWheelEvent *event) override;
+  // Pan support
+  void keyPressEvent(QKeyEvent *event) override;
+  void keyReleaseEvent(QKeyEvent *event) override;
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
 
 private slots:
   void onActionOpenTriggered();
@@ -55,6 +60,11 @@ private:
   void zoomIn();
   void zoomOut();
   void updateImageDisplay();
+
+  // Pan
+  bool m_isPanning;
+  bool m_spaceHeld;
+  QPoint m_lastPanPos;
 
   void setupUiProgrammatically();
   void updateTimeline();

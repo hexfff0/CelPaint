@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -73,6 +74,20 @@ ColorReplaceDialog::ColorReplaceDialog(QWidget *parent) : QDialog(parent) {
 
   actionLayout->addWidget(m_btnApplyCurrent);
   actionLayout->addWidget(m_btnApplyAll);
+
+  // Batch tolerance
+  actionLayout->addStretch();
+  QLabel *tolLabel = new QLabel(tr("Set All Tolerance:"), this);
+  m_toleranceSpinner = new QSpinBox(this);
+  m_toleranceSpinner->setRange(0, 255);
+  m_toleranceSpinner->setValue(0);
+  m_btnSetTolerance = new QPushButton(tr("Set"), this);
+  connect(m_btnSetTolerance, &QPushButton::clicked, this,
+          &ColorReplaceDialog::onSetAllToleranceClicked);
+
+  actionLayout->addWidget(tolLabel);
+  actionLayout->addWidget(m_toleranceSpinner);
+  actionLayout->addWidget(m_btnSetTolerance);
   mainLayout->addLayout(actionLayout);
 
   // Add a default row
@@ -139,6 +154,20 @@ void ColorReplaceDialog::onClearAllClicked() { m_table->setRowCount(0); }
 void ColorReplaceDialog::onApplyCurrentClicked() { emit applyRequested(false); }
 
 void ColorReplaceDialog::onApplyAllClicked() { emit applyRequested(true); }
+
+void ColorReplaceDialog::onSetAllToleranceClicked() {
+  int newTolerance = m_toleranceSpinner->value();
+  // Apply to all checked (enabled) rows
+  for (int i = 0; i < m_table->rowCount(); ++i) {
+    QTableWidgetItem *checkItem = m_table->item(i, 0);
+    if (checkItem && checkItem->checkState() == Qt::Checked) {
+      QTableWidgetItem *tolItem = m_table->item(i, 4);
+      if (tolItem) {
+        tolItem->setText(QString::number(newTolerance));
+      }
+    }
+  }
+}
 
 QList<ColorSwap> ColorReplaceDialog::getColorSwaps() const {
   QList<ColorSwap> swaps;

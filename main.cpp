@@ -1,22 +1,23 @@
+#include "main.h"
 #include "./ui_main.h"
 #include "ColorReplaceDialog.h"
 #include "ImageSequence.h"
-#include "main.h"
-
 
 #include <QApplication>
 #include <QDockWidget>
 #include <QFileDialog>
+#include <QKeyEvent>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QScrollBar>
 #include <QStatusBar>
 #include <QWheelEvent>
 
 Main::Main(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::Main),
       m_sequence(new ImageSequence(this)), m_colorReplaceDlg(nullptr),
-      m_scaleFactor(1.0) {
+      m_scaleFactor(1.0), m_isPanning(false), m_spaceHeld(false) {
   ui->setupUi(this);
   setupUiProgrammatically();
 
@@ -251,4 +252,62 @@ void Main::zoomIn() {
 void Main::zoomOut() {
   m_scaleFactor *= 0.8;
   updateImageDisplay();
+}
+
+void Main::keyPressEvent(QKeyEvent *event) {
+  if (event->key() == Qt::Key_Space && !event->isAutoRepeat()) {
+    m_spaceHeld = true;
+    m_scrollArea->setCursor(Qt::OpenHandCursor);
+  }
+  QMainWindow::keyPressEvent(event);
+}
+
+void Main::keyReleaseEvent(QKeyEvent *event) {
+  if (event->key() == Qt::Key_Space && !event->isAutoRepeat()) {
+    m_spaceHeld = false;
+    m_isPanning = false;
+    m_scrollArea->unsetCursor();
+  }
+  QMainWindow::keyReleaseEvent(event);
+}
+
+void Main::mousePressEvent(QMouseEvent *event) {
+  if (m_spaceHeld && event->button() == Qt::LeftButton) {
+    m_isPanning = true;
+    m_lastPanPos = event->globalPosition().toPoint();
+    m_scrollArea->setCursor(Qt::ClosedHandCursor);
+    event->accept();
+    return;
+  }
+  QMainWindow::mousePressEvent(event);
+}
+
+void Main::mouseMoveEvent(QMouseEvent *event) {
+  if (m_isPanning) {
+    QPoint delta = event->globalPosition().toPoint() - m_lastPanPos;
+    m_lastPanPos = event->globalPosition().toPoint();
+
+    QScrollBar *hBar = m_scrollArea->horizontalScrollBar();
+    QScrollBar *vBar = m_scrollArea->verticalScrollBar();
+    hBar->setValue(hBar->value() - delta.x());
+    vBar->setValue(vBar->value() - delta.y());
+
+    event->accept();
+    return;
+  }
+  QMainWindow::mouseMoveEvent(event);
+}
+
+void Main::mouseReleaseEvent(QMouseEvent *event) {
+  if (m_isPanning && event->button() == Qt::LeftButton) {
+    m_isPanning = false;
+    if (m_spaceHeld) {
+      m_scrollArea->setCursor(Qt::OpenHandCursor);
+    } else {
+      m_scrollArea->unsetCursor();
+    }
+    event->accept();
+    return;
+  }
+  QMainWindow::mouseReleaseEvent(event);
 }
