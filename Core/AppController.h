@@ -2,14 +2,15 @@
 #define APPCONTROLLER_H
 
 #include "ColorSwapModel.h"
+#include "GuideCheckModel.h"
 #include "TimelineModel.h"
-#include <QColor>
 #include <QGuiApplication>
 #include <QList>
 #include <QObject>
 #include <QPixmap>
 #include <QScreen>
 #include <QUrl>
+#include <QtGui/QColor>
 
 class ImageSequence;
 
@@ -19,6 +20,7 @@ class AppController : public QObject {
   Q_PROPERTY(
       QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
   Q_PROPERTY(ColorSwapModel *colorSwapModel READ colorSwapModel CONSTANT)
+  Q_PROPERTY(GuideCheckModel *guideCheckModel READ guideCheckModel CONSTANT)
   Q_PROPERTY(TimelineModel *timelineModel READ timelineModel CONSTANT)
   Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY
                  currentIndexChanged)
@@ -35,6 +37,7 @@ public:
   QString currentTitle() const;
   QString statusMessage() const;
   ColorSwapModel *colorSwapModel() const;
+  GuideCheckModel *guideCheckModel() const;
   TimelineModel *timelineModel() const;
   int currentIndex() const;
   int frameCount() const;
@@ -50,6 +53,9 @@ public:
   Q_INVOKABLE void pickColorAt(int x, int y);
   Q_INVOKABLE QColor pickScreenColor(int x, int y);
   Q_INVOKABLE void applyColorReplacement(bool allFrames);
+
+  // Guide Color Feature
+  Q_INVOKABLE void applyGuideCheck(bool allFrames, int radius, int thickness);
 
   Q_INVOKABLE void addCustomColor(const QColor &color);
   QList<QColor> customColors() const;
@@ -73,6 +79,7 @@ private:
 
   ImageSequence *m_sequence;
   ColorSwapModel *m_colorSwapModel;
+  GuideCheckModel *m_guideCheckModel;
   TimelineModel *m_timelineModel;
   QString m_statusMessage;
   double m_zoomLevel = 1.0;

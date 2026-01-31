@@ -1,7 +1,12 @@
 #include "ImageSequence.h"
 #include <QDebug>
 #include <QFileInfo>
+#include <QPainter>
+#include <QPoint>
+#include <QVector>
 #include <QtGlobal>
+#include <cmath>
+#include <cstdlib>
 
 ImageSequence::ImageSequence(QObject *parent)
     : QObject(parent), m_currentIndex(-1) {}
@@ -147,5 +152,145 @@ void ImageSequence::replaceColorsInImage(QImage &img,
         }
       }
     }
+  }
+}
+
+// Helper for color matching with tolerance
+static bool colorsMatch(const QColor &c1, const QColor &c2, int tolerance) {
+  if (tolerance <= 0)
+    return c1 == c2;
+
+  int r1 = c1.red(), g1 = c1.green(), b1 = c1.blue(), a1 = c1.alpha();
+  int r2 = c2.red(), g2 = c2.green(), b2 = c2.blue(), a2 = c2.alpha();
+
+  return qAbs(r1 - r2) <= tolerance && qAbs(g1 - g2) <= tolerance &&
+         qAbs(b1 - b2) <= tolerance && qAbs(a1 - a2) <= tolerance;
+}
+
+// Helper to process a single image
+static bool processGuideCheckOnImage(QImage &img,
+                                     const QList<GuideColorParams> &params) {
+  if (params.isEmpty())
+    return false;
+
+  QImage resultImg = img.copy();
+  QPainter painter(&resultImg);
+  painter.setRenderHint(QPainter::Antialiasing);
+  bool modified = false;
+
+  int w = img.width();
+  int h = img.height();
+  QVector<bool> visited(w * h, false);
+  QList<QPoint> queue;
+
+  for (const auto &p : params) {
+    if (!p.enabled)
+      continue;
+
+    std::fill(visited.begin(), visited.end(),
+              false); // Reset visited for each param?
+    // Logic check: if visited is shared across params, blobs might interfere if
+    // they overlap? Original code: `QVector<bool> visited(w * h, false);`
+    // calculated once PER IMAGE? Wait. Original code declared `visited` INSIDE
+    // the params loop: `for (const auto &p : params) { ... QVector<bool>
+    // visited ... }` So yes, it resets for each color check. My static helper
+    // should follow that.
+  }
+
+  // Actually, let's copy the code logic exactly.
+  for (const auto &p : params) {
+    if (!p.enabled)
+      continue;
+
+    int w = img.width();
+    int h = img.height();
+    QVector<bool> visited(w * h, false);
+    QList<QPoint> queue;
+
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x) {
+        if (visited[y * w + x])
+          continue;
+
+        if (colorsMatch(img.pixelColor(x, y), p.sourceColor, p.tolerance)) {
+          // BFS
+          long long sumX = 0, sumY = 0;
+          int count = 0;
+
+          queue.clear();
+          queue.append(QPoint(x, y));
+          visited[y * w + x] = true;
+
+          while (!queue.isEmpty()) {
+            QPoint pt = queue.takeFirst();
+            sumX += pt.x();
+            sumY += pt.y();
+            count++;
+
+            const int dx[] = {1, -1, 0, 0};
+            const int dy[] = {0, 0, 1, -1};
+
+            for (int k = 0; k < 4; ++k) {
+              int nx = pt.x() + dx[k];
+              int ny = pt.y() + dy[k];
+
+              if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                if (!visited[ny * w + nx] &&
+                    colorsMatch(img.pixelColor(nx, ny), p.sourceColor,
+                                p.tolerance)) {
+                  visited[ny * w + nx] = true;
+                  queue.append(QPoint(nx, ny));
+                }
+              }
+            }
+          }
+
+          if (count > 0) {
+            int centerX = sumX / count;
+            int centerY = sumY / count;
+            QPen pen(p.selectionColor);
+            pen.setWidth(p.thickness);
+            painter.setPen(pen);
+            painter.setBrush(Qt::NoBrush);
+            painter.drawEllipse(QPoint(centerX, centerY), p.radius, p.radius);
+            modified = true;
+          }
+        }
+      }
+    }
+  }
+  painter.end();
+
+  if (modified) {
+    img = resultImg;
+  }
+  return modified;
+}
+
+void ImageSequence::applyGuideCheckToAllFrames(
+    const QList<GuideColorParams> &params) {
+  if (params.isEmpty())
+    return;
+
+  for (int i = 0; i < m_frames.size(); ++i) {
+    if (processGuideCheckOnImage(m_frames[i].image, params)) {
+      emit imageModified(i, m_frames[i].image);
+    }
+  }
+
+  if (m_currentIndex >= 0) {
+    emit currentImageChanged(m_frames[m_currentIndex].image);
+  }
+}
+
+void ImageSequence::applyGuideCheckToCurrentFrame(
+    const QList<GuideColorParams> &params) {
+  if (params.isEmpty() || m_currentIndex < 0 ||
+      m_currentIndex >= m_frames.size())
+    return;
+
+  if (processGuideCheckOnImage(m_frames[m_currentIndex].image, params)) {
+    emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
+    emit currentImageChanged(m_frames[m_currentIndex].image);
   }
 }

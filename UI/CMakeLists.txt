@@ -9,6 +9,7 @@ qt_add_qml_module(CelPaintUI
         TimelineView.qml
         PhotoshopColorPicker.qml
         Theme.js
+        GuideColorDialog.qml
 )
 
 target_link_libraries(CelPaintUIplugin PRIVATE

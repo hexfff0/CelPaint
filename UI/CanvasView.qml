@@ -18,6 +18,7 @@ Item {
         anchors.fill: parent
         clip: true
         focus: true
+        Component.onCompleted: forceActiveFocus()
 
         property real scaleFactor: 1.0
         property real minScale: 0.1
@@ -70,6 +71,7 @@ Item {
                          (zoomArea.spaceHeld ? Qt.OpenHandCursor : Qt.ArrowCursor)
 
             onPressed: (mouse) => {
+                zoomArea.forceActiveFocus()
                 if (mouse.button === Qt.MiddleButton || 
                     (mouse.button === Qt.LeftButton && zoomArea.spaceHeld)) {
                     isPanning = true

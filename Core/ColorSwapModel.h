@@ -1,9 +1,11 @@
 #ifndef COLORSWAPMODEL_H
 #define COLORSWAPMODEL_H
 
-#include "ImageSequence.h"
+#include "CelPaintTypes.h"
 #include <QAbstractListModel>
-#include <QColor>
+#include <QList>
+#include <QtGui/QColor>
+
 
 class ColorSwapModel : public QAbstractListModel {
   Q_OBJECT

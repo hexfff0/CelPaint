@@ -1,19 +1,13 @@
 #ifndef IMAGESEQUENCE_H
 #define IMAGESEQUENCE_H
 
-#include <QColor>
+#include "CelPaintTypes.h"
 #include <QDir>
 #include <QImage>
 #include <QList>
 #include <QObject>
 #include <QString>
-
-struct ColorSwap {
-  QColor source;
-  QColor dest;
-  bool enabled = true;
-  int tolerance = 0;
-};
+#include <QtGui/QColor>
 
 class ImageSequence : public QObject {
   Q_OBJECT
@@ -41,6 +35,10 @@ public:
   // Core Logic: Color Replacement
   void replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps);
   void replaceColorsInAllFrames(const QList<ColorSwap> &swaps);
+
+  // New Feature: Check Guide Color
+  void applyGuideCheckToAllFrames(const QList<GuideColorParams> &params);
+  void applyGuideCheckToCurrentFrame(const QList<GuideColorParams> &params);
 
 signals:
   void sequenceLoaded();

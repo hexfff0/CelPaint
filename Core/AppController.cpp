@@ -1,5 +1,6 @@
 #include "AppController.h"
 #include "ColorSwapModel.h"
+#include "GuideCheckModel.h"
 #include "ImageSequence.h"
 #include "TimelineModel.h"
 #include <QFileInfo>
@@ -9,6 +10,7 @@
 AppController::AppController(ImageSequence *sequence, QObject *parent)
     : QObject(parent), m_sequence(sequence),
       m_colorSwapModel(new ColorSwapModel(this)),
+      m_guideCheckModel(new GuideCheckModel(this)),
       m_timelineModel(new TimelineModel(sequence, this)),
       m_statusMessage("Ready"), m_zoomLevel(1.0) {
   connect(m_sequence, &ImageSequence::sequenceLoaded, this,
@@ -116,8 +118,10 @@ QColor AppController::pickScreenColor(int x, int y) {
 }
 
 void AppController::applyColorReplacement(bool allFrames) {
-  QList<ColorSwap> swaps = m_colorSwapModel->getSwaps();
+  if (!m_sequence || !m_colorSwapModel)
+    return;
 
+  QList<ColorSwap> swaps = m_colorSwapModel->getSwaps();
   if (allFrames) {
     m_sequence->replaceColorsInAllFrames(swaps);
     setStatusMessage("Replaced colors in all frames.");
@@ -126,6 +130,31 @@ void AppController::applyColorReplacement(bool allFrames) {
     setStatusMessage("Replaced colors in current frame.");
   }
 
+  emit requestImageRefresh();
+}
+
+GuideCheckModel *AppController::guideCheckModel() const {
+  return m_guideCheckModel;
+}
+
+void AppController::applyGuideCheck(bool allFrames, int radius, int thickness) {
+  if (!m_sequence || !m_guideCheckModel)
+    return;
+
+  QList<GuideColorParams> params =
+      m_guideCheckModel->getChecks(radius, thickness);
+  if (params.isEmpty()) {
+    setStatusMessage("No guide checks enabled.");
+    return;
+  }
+
+  if (allFrames) {
+    m_sequence->applyGuideCheckToAllFrames(params);
+    setStatusMessage("Applied guide checks (circles) to all frames.");
+  } else {
+    m_sequence->applyGuideCheckToCurrentFrame(params);
+    setStatusMessage("Applied guide checks (circles) to current frame.");
+  }
   emit requestImageRefresh();
 }
 

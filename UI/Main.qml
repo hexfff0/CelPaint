@@ -141,10 +141,14 @@ ApplicationWindow {
                     }
 
                     MenuItem {
-                        text: qsTr("Batch Palette (色置換)")
-                        onTriggered: colorReplaceDialog.show()
-                    }
+                    text: qsTr("Batch Palette")
+                    onTriggered: colorReplaceDialog.show()
                 }
+                MenuItem {
+                    text: qsTr("Check Guide Color")
+                    onTriggered: guideColorDialog.show()
+                }
+            }
             }
             
             Item { Layout.fillWidth: true } // Spacer
@@ -244,6 +248,10 @@ ApplicationWindow {
     }
 
     // Dialogs
+    GuideColorDialog {
+        id: guideColorDialog
+    }
+
     FileDialog {
         id: openFileDialog
         title: qsTr("Open Image Sequence")
