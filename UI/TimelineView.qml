@@ -1,82 +1,96 @@
 import QtQuick
 import QtQuick.Controls
+import "Theme.js" as Theme
 
 Rectangle {
     id: root
-    color: "#333333"
-    
+    color: Theme.panel
+
     ListView {
         id: listView
         anchors.fill: parent
-        anchors.margins: 5
+        // Leave space at bottom for ScrollBar if needed, or let it overlay. 
+        // User requested "slide below", so we make it prominent.
+        anchors.bottomMargin: 14 
+        
         orientation: ListView.Horizontal
+        spacing: 1
         clip: true
-        spacing: 5
         
         model: app.timelineModel
 
-        delegate: Item {
-            id: delegateItem
-            width: 120
-            height: listView.height - 10
-
-            Rectangle {
+        delegate: Rectangle {
+            id: delegateRoot
+            width: 90
+            height: listView.height // Fill list height
+            color: (index === app.currentIndex) ? Theme.selection : Theme.background
+            border.color: (index === app.currentIndex) ? Theme.accent : Theme.panelBorder
+            border.width: (index === app.currentIndex) ? 1 : 1
+            
+            MouseArea {
                 anchors.fill: parent
-                anchors.margins: 2
-                color: model.isSelected ? "#505050" : "transparent"
-                border.color: model.isSelected ? "#3daee9" : "#555555"
-                border.width: model.isSelected ? 3 : 1
-                radius: 6
+                onClicked: app.setCurrentIndex(index)
+            }
 
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 4
-
+            Column {
+                anchors.centerIn: parent
+                spacing: 2
+                
+                // Thumbnail
+                Rectangle {
+                    width: 76; height: 56 // slightly less than delegate width
+                    color: "transparent"
+                    clip: true
+                    
                     Image {
-                        width: 100
-                        height: 100
+                        anchors.fill: parent
                         source: "image://sequence/" + model.imageId + "?thumbnail=true&r=" + (Window.window ? Window.window.refreshCounter : 0)
-                        fillMode: Image.PreserveAspectFit
+                        fillMode: Image.PreserveAspectCrop
                         cache: false
-                        sourceSize.width: 100
-                        sourceSize.height: 100
                         asynchronous: false
-                        
-                        Rectangle {
-                            anchors.fill: parent
-                            color: "transparent"
-                            border.color: "#666666"
-                            border.width: 1
-                        }
-                    }
-
-                    Text {
-                        text: model.label
-                        color: "white"
-                        font.pixelSize: 12
-                        anchors.horizontalCenter: parent.horizontalCenter
                     }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        app.setCurrentIndex(index)
-                    }
+                Text {
+                    text: model.label
+                    color: (index === app.currentIndex) ? "white" : Theme.text
+                    font.pixelSize: Theme.smallFontPixelSize
+                    font.bold: (index === app.currentIndex)
+                    anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
         }
         
+        // Horizontal ScrollBar
         ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AsNeeded
+            id: hbar
+            policy: ScrollBar.AlwaysOn
+            active: true
+            size: listView.width / listView.contentWidth
+            
+            // Custom styling for the scrollbar to look like a "slide"
+            contentItem: Rectangle {
+                implicitHeight: 6
+                implicitWidth: 100
+                radius: 3
+                color: hbar.pressed ? Theme.accent : Theme.textDisabled
+            }
+            background: Rectangle {
+                implicitHeight: 6
+                color: "#1a1a1a"
+            }
+            
+            anchors.bottom: parent.bottom // Attached to ListView
+            anchors.left: parent.left
+            anchors.right: parent.right
         }
-    }
-    
-    // Empty state
-    Label {
-        anchors.centerIn: parent
-        text: qsTr("No images loaded. Use File → Open Sequence...")
-        color: "#888888"
-        visible: listView.count === 0
+        
+        // Auto scroll to current
+        Connections {
+            target: app
+            function onCurrentIndexChanged() {
+                listView.positionViewAtIndex(app.currentIndex, ListView.Center)
+            }
+        }
     }
 }

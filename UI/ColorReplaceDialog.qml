@@ -1,149 +1,114 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
+import QtQuick.Window
+import "Theme.js" as Theme
 
 Window {
     id: root
     width: 600
-    height: 500
+    height: 700
     title: qsTr("Batch Palette (色置換)")
-    modality: Qt.NonModal
+    visible: false
+    color: Theme.background
     flags: Qt.Dialog
-
-    color: "#3c3c3c"
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
-        spacing: 10
+        anchors.margins: 15
+        spacing: 15
 
-        // Toolbar
+        // Header
+        Label {
+            text: qsTr("Batch Palette")
+            font.bold: true
+            font.pixelSize: Theme.fontPixelSize
+            color: Theme.text
+        }
+
+        // List Header
         RowLayout {
             Layout.fillWidth: true
             spacing: 5
-            
-            Button {
-                text: qsTr("Add")
-                onClicked: app.colorSwapModel.addSwap("#ffffff", "#0000ff", 0)
-            }
-            Button {
-                text: qsTr("Clear All")
-                onClicked: app.colorSwapModel.clear()
-            }
-            
+            Label { text: "No."; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 30; horizontalAlignment: Text.AlignHCenter }
+            Label { text: "Use"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignHCenter }
+            Label { text: "Source"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 60; horizontalAlignment: Text.AlignHCenter }
+            Item { width: 20 } // Arrow space
+            Label { text: "Target"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 60; horizontalAlignment: Text.AlignHCenter }
+            Label { text: "Tolerance"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
             Item { Layout.fillWidth: true }
-            
-            Label {
-                text: qsTr("Set All Tolerance:")
-                color: "white"
-            }
-            SpinBox {
-                id: toleranceSpinner
-                from: 0
-                to: 255
-                value: 0
-                implicitWidth: 80
-            }
-            Button {
-                text: qsTr("Set")
-                onClicked: app.colorSwapModel.setAllTolerance(toleranceSpinner.value)
-            }
         }
 
-        // Header
-        Rectangle {
-            Layout.fillWidth: true
-            height: 30
-            color: "#505050"
-            radius: 3
-            
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 10
-                anchors.rightMargin: 10
-                spacing: 10
-                
-                Label { 
-                    text: qsTr("On")
-                    color: "white"
-                    font.bold: true
-                    Layout.preferredWidth: 40
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Label { 
-                    text: qsTr("Source")
-                    color: "white"
-                    font.bold: true
-                    Layout.preferredWidth: 80
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Label { 
-                    text: "→"
-                    color: "white"
-                    font.bold: true
-                    Layout.preferredWidth: 30
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Label { 
-                    text: qsTr("Dest")
-                    color: "white"
-                    font.bold: true
-                    Layout.preferredWidth: 80
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Label { 
-                    text: qsTr("Tolerance")
-                    color: "white"
-                    font.bold: true
-                    Layout.preferredWidth: 80
-                    horizontalAlignment: Text.AlignHCenter
-                }
-                Item { Layout.fillWidth: true }
-            }
-        }
+        Divider { Layout.fillWidth: true }
 
-        // Color swap list
+        // Color List
         ListView {
-            id: listView
+            id: colorList
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
             model: app.colorSwapModel
             spacing: 2
-            
-            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
             delegate: Rectangle {
-                width: listView.width - 20
-                height: 40
-                color: index % 2 === 0 ? "#454545" : "#404040"
-                radius: 3
-                
+                width: ListView.view.width
+                height: 36
+                color: Theme.panel
+                border.color: Theme.panelBorder
+                border.width: 1
+
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    spacing: 10
-                    
-                    // Enabled Checkbox
-                    CheckBox {
-                        Layout.preferredWidth: 40
-                        checked: model.enabled
-                        onToggled: model.enabled = checked
+                    anchors.leftMargin: 5
+                    anchors.rightMargin: 5
+                    spacing: 5
+
+                    // No.
+                    Label { 
+                        text: (index + 1).toString()
+                        color: Theme.text
+                        font.pixelSize: Theme.smallFontPixelSize
+                        Layout.preferredWidth: 30
+                        horizontalAlignment: Text.AlignHCenter
                     }
-                    
-                    // Source Color (clickable)
+
+                    // Checkbox (Enable)
+                    CheckBox {
+                        checked: model.enabled
+                        Layout.preferredWidth: 40
+                        Layout.alignment: Qt.AlignHCenter
+                        onToggled: model.enabled = checked
+                        
+                        indicator: Rectangle {
+                            implicitWidth: 16
+                            implicitHeight: 16
+                            x: (parent.width - width) / 2
+                            y: (parent.height - height) / 2
+                            radius: 2
+                            color: parent.checked ? Theme.accent : Theme.inputBackground
+                            border.color: Theme.panelBorder
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✔"
+                                font.pixelSize: 12
+                                color: "white"
+                                visible: parent.parent.checked
+                            }
+                        }
+                    }
+
+                    // Source
                     Rectangle {
-                        Layout.preferredWidth: 80
-                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 60; Layout.fillHeight: true
+                        Layout.margins: 4
                         color: model.sourceColor
-                        border.color: "black"
+                        border.color: Theme.panelBorder
                         border.width: 1
-                        radius: 3
                         
                         MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 colorPicker.targetIndex = index
                                 colorPicker.targetRole = "source"
@@ -152,82 +117,141 @@ Window {
                             }
                         }
                     }
-                    
+
                     // Arrow
-                    Label {
-                        Layout.preferredWidth: 30
-                        text: "→"
-                        color: "white"
-                        font.pixelSize: 18
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                    
-                    // Dest Color (clickable)
+                    Label { text: "→"; color: Theme.textDisabled; Layout.alignment: Qt.AlignHCenter }
+
+                    // Destination
                     Rectangle {
-                        Layout.preferredWidth: 80
-                        Layout.preferredHeight: 30
+                        Layout.preferredWidth: 60; Layout.fillHeight: true
+                        Layout.margins: 4
                         color: model.destColor
-                        border.color: "black"
+                        border.color: Theme.panelBorder
                         border.width: 1
-                        radius: 3
-                        
+
                         MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 colorPicker.targetIndex = index
-                                colorPicker.targetRole = "dest"
+                                colorPicker.targetRole = "target"
                                 colorPicker.setColor(model.destColor)
                                 colorPicker.show()
                             }
                         }
                     }
                     
-                    // Tolerance
+                    // Tolerance Input
                     SpinBox {
-                        Layout.preferredWidth: 80
-                        from: 0
-                        to: 255
+                        id: toleranceSpinBox
+                        from: 0; to: 100
                         value: model.tolerance
-                        onValueModified: model.tolerance = value
+                        editable: true
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 30
+                        
+                        onValueModified: {
+                            if (linkToleranceBtn.checked) {
+                                app.colorSwapModel.setAllTolerance(value)
+                            } else {
+                                model.tolerance = value
+                            }
+                        }
+                        
+                        // Custom visual style to match theme
+                        contentItem: TextInput {
+                            text: toleranceSpinBox.textFromValue(toleranceSpinBox.value, toleranceSpinBox.locale)
+                            font.pixelSize: Theme.smallFontPixelSize
+                            color: Theme.text
+                            selectionColor: Theme.selection
+                            selectedTextColor: "white"
+                            horizontalAlignment: Qt.AlignHCenter
+                            verticalAlignment: Qt.AlignVCenter
+                            readOnly: !parent.editable
+                            validator: parent.validator
+                            inputMethodHints: Qt.ImhDigitsOnly
+                        }
+                        background: Rectangle {
+                            color: Theme.inputBackground
+                            border.color: parent.activeFocus ? Theme.accent : Theme.inputBorder
+                        }
                     }
-                    
-                    Item { Layout.fillWidth: true }
-                    
-                    // Remove button
+
+                    Item { Layout.fillWidth: true } // Spacer
+
+                    // Remove Button
                     Button {
-                        text: "✕"
-                        implicitWidth: 30
-                        implicitHeight: 30
+                        text: "×"
+                        Layout.preferredWidth: 30
+                        Layout.preferredHeight: 25
+                        background: Rectangle {
+                            color: parent.down ? Theme.buttonPressed : (parent.hovered ? Theme.buttonHover : "transparent")
+                            radius: 2
+                        }
+                        contentItem: Text {
+                            text: parent.text; color: Theme.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                        }
                         onClicked: app.colorSwapModel.removeSwap(index)
                     }
                 }
             }
-            
-            // Empty state
-            Label {
-                anchors.centerIn: parent
-                text: qsTr("Click on image to pick colors,\nor click 'Add' to add manually")
-                color: "#888888"
-                visible: listView.count === 0
-                horizontalAlignment: Text.AlignHCenter
-            }
         }
 
-        // Footer Actions
+        Divider { Layout.fillWidth: true }
+
+        // Link Tolerance Toggle (Footer)
+        RowLayout {
+            Layout.fillWidth: true
+            
+            Button {
+                id: linkToleranceBtn
+                checkable: true
+                checked: true // Default to linked
+                text: checked ? qsTr("🔗 Link Tolerance (ON)") : qsTr("🔗 Link Tolerance (OFF)")
+                
+                background: Rectangle {
+                    color: parent.checked ? Theme.selection : "transparent"
+                    border.color: Theme.panelBorder
+                    radius: 2
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: parent.checked ? "white" : Theme.text
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: Theme.smallFontPixelSize
+                }
+            }
+            
+            Item { Layout.fillWidth: true }
+        }
+
+        // Actions
+        RowLayout {
+            Layout.fillWidth: true
+            // ... (rest of buttons)
+            spacing: 10
+
+            StandardButton {
+                text: qsTr("+ Add New Pair")
+                Layout.fillWidth: true
+                onClicked: app.colorSwapModel.addSwap(Qt.rgba(1,0,0,1), Qt.rgba(0,1,0,1), 0)
+            }
+        }
+        
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
             
-            Item { Layout.fillWidth: true }
-            
-            Button {
-                text: qsTr("Apply (Current Frame)")
+            StandardButton {
+                text: qsTr("Apply (Current)")
+                Layout.fillWidth: true
                 onClicked: app.applyColorReplacement(false)
             }
-            
-            Button {
-                text: qsTr("Apply All (Sequence)")
-                highlighted: true
+            StandardButton {
+                text: qsTr("Apply (All Frames)")
+                Layout.fillWidth: true
+                isAccent: true
                 onClicked: app.applyColorReplacement(true)
             }
         }
@@ -235,17 +259,33 @@ Window {
 
     PhotoshopColorPicker {
         id: colorPicker
-        property int targetIndex: -1
-        property string targetRole: ""
-        
         onAccepted: (color) => {
             if (targetIndex >= 0) {
-                if (targetRole === "dest") {
-                    app.colorSwapModel.setDestColor(targetIndex, color)
-                } else if (targetRole === "source") {
-                    app.colorSwapModel.setSourceColor(targetIndex, color)
-                }
+                if (targetRole === "source") app.colorSwapModel.setSourceColor(targetIndex, color)
+                else if (targetRole === "target") app.colorSwapModel.setDestColor(targetIndex, color)
             }
+        }
+    }
+
+    // Helper Components
+    component Divider : Rectangle {
+        height: 1
+        color: Theme.panelBorder
+    }
+
+    component StandardButton : Button {
+        property bool isAccent: false
+        background: Rectangle {
+            color: parent.down ? Theme.buttonPressed : (parent.hovered ? Theme.buttonHover : (isAccent ? Theme.accent : Theme.buttonNormal))
+            radius: 2
+            border.color: Theme.panelBorder
+        }
+        contentItem: Text {
+            text: parent.text
+            color: isAccent ? "white" : Theme.text
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: Theme.fontPixelSize
         }
     }
 }

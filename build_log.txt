@@ -1,32 +1,24 @@
 ﻿[  0%] Built target Core_autogen_timestamp_deps
 [  1%] Built target Core_autogen
-[ 16%] Built target Core
-[ 16%] Built target CelPaintUIplugin_autogen_timestamp_deps
-[ 17%] Built target CelPaintUIplugin_autogen
-[ 19%] Built target CelPaintUI_resources_1
-[ 21%] Built target CelPaintUI_copy_qml
-[ 23%] Built target generate_qmlls_build_ini_file
-[ 25%] Built target CelPaintUI_copy_res
-[ 25%] Built target CelPaintUI_autogen_timestamp_deps
-[ 26%] Built target CelPaintUI_autogen
-[ 28%] Running AUTOMOC file extraction for target CelPaintUI
-[ 30%] Generating .rcc/qmlcache/CelPaintUI_PhotoshopColorPicker_qml.cpp, .rcc/qmlcache/CelPaintUI_PhotoshopColorPicker_qml.cpp.aotstats
-cmake : Error compiling qml file: D:/Workspace/Github/
-CelPaint/UI/PhotoshopColorPicker.qml:173:29: error: 
-Property value set multiple times
-At line:1 char:1
-+ cmake --build build 2>&1 | Out-File -Encoding utf8 
-build_log.txt
-+ ~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (Error co 
-   mpiling... multiple times:String) [], RemoteExcep  
-  tion
-    + FullyQualifiedErrorId : NativeCommandError
- 
-mingw32-make.exe[2]: *** 
-[UI\CMakeFiles\CelPaintUI.dir\build.make:164: UI/.rcc/
-qmlcache/CelPaintUI_PhotoshopColorPicker_qml.cpp] 
-Error 1
-mingw32-make.exe[1]: *** [CMakeFiles\Makefile2:423: 
-UI/CMakeFiles/CelPaintUI.dir/all] Error 2
-mingw32-make.exe: *** [Makefile:135: all] Error 2
+[ 15%] Built target Core
+[ 15%] Built target CelPaintUIplugin_autogen_timestamp_deps
+[ 17%] Built target CelPaintUI_copy_qml
+[ 18%] Built target generate_qmlls_build_ini_file
+[ 20%] Built target CelPaintUI_copy_res
+[ 20%] Built target CelPaintUI_autogen_timestamp_deps
+[ 22%] Built target CelPaintUI_autogen
+[ 24%] Running AUTOMOC file extraction for target CelPaintUI
+[ 24%] Running AUTOMOC file extraction for target CelPaintUI
+[ 67%] Built target CelPaintUI
+[ 68%] Built target CelPaintUI_resources_1
+[ 70%] Built target CelPaintUI_resources_2
+[ 72%] Built target CelPaintUIplugin_autogen
+[ 79%] Built target CelPaintUIplugin
+[ 81%] Built target CelPaint_qmlimportscan
+[ 81%] Built target CelPaint_autogen_timestamp_deps
+[ 82%] Built target CelPaint_autogen
+[ 82%] Built target CelPaintUIplugin_init_autogen_timestamp_deps
+[ 84%] Built target CelPaintUIplugin_init_autogen
+[ 86%] Running AUTOMOC file extraction for target CelPaintUIplugin_init
+[ 93%] Built target CelPaintUIplugin_init
+[100%] Built target CelPaint

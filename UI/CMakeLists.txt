@@ -8,6 +8,7 @@ qt_add_qml_module(CelPaintUI
         ColorReplaceDialog.qml
         TimelineView.qml
         PhotoshopColorPicker.qml
+        Theme.js
 )
 
 target_link_libraries(CelPaintUIplugin PRIVATE
