@@ -38,14 +38,14 @@ Rectangle {
                 
                 // Thumbnail
                 Rectangle {
-                    width: 76; height: 56 // slightly less than delegate width
+                    width: 76; height: 44 // Adjusted for 16:9 aspect match
                     color: "transparent"
                     clip: true
                     
                     Image {
                         anchors.fill: parent
                         source: "image://sequence/" + model.imageId + "?thumbnail=true&r=" + (Window.window ? Window.window.refreshCounter : 0)
-                        fillMode: Image.PreserveAspectCrop
+                        fillMode: Image.PreserveAspectFit
                         cache: false
                         asynchronous: false
                     }

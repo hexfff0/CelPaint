@@ -193,7 +193,7 @@ ApplicationWindow {
 
         // Timeline Area
         Rectangle {
-            SplitView.preferredHeight: 220
+            SplitView.preferredHeight: 160
             color: Theme.panel
             
             // Header bar for Timeline
@@ -248,7 +248,7 @@ ApplicationWindow {
         id: openFileDialog
         title: qsTr("Open Image Sequence")
         fileMode: FileDialog.OpenFiles
-        nameFilters: ["Images (*.png *.bmp *.jpg *.jpeg *.tif *.tiff)", "All files (*)"]
+        nameFilters: ["Images (*.png *.jpg *.jpeg *.bmp *.tga *.targa *.tif *.tiff)", "All files (*)"]
         onAccepted: {
             app.openSequence(selectedFiles)
         }
