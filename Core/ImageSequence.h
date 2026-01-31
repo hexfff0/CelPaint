@@ -8,16 +8,19 @@
 #include <QObject>
 #include <QString>
 
-
 struct ColorSwap {
   QColor source;
   QColor dest;
-  bool enabled;
-  int tolerance;
+  bool enabled = true;
+  int tolerance = 0;
 };
 
 class ImageSequence : public QObject {
   Q_OBJECT
+  Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY
+                 currentIndexChanged)
+  Q_PROPERTY(int count READ count NOTIFY countChanged)
+
 public:
   explicit ImageSequence(QObject *parent = nullptr);
 
@@ -36,12 +39,13 @@ public:
   void setCurrentIndex(int index);
 
   // Core Logic: Color Replacement
-  // Now accepts a list of swaps
   void replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps);
   void replaceColorsInAllFrames(const QList<ColorSwap> &swaps);
 
 signals:
   void sequenceLoaded();
+  void currentIndexChanged(int index);
+  void countChanged();
   void currentImageChanged(const QImage &image);
   void imageModified(int index, const QImage &image);
 
@@ -52,7 +56,7 @@ private:
   };
 
   QList<Frame> m_frames;
-  int m_currentIndex;
+  int m_currentIndex = -1;
 
   void replaceColorsInImage(QImage &img, const QList<ColorSwap> &swaps);
 };

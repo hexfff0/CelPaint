@@ -1,5 +1,6 @@
 #include "ImageSequence.h"
 #include <QDebug>
+#include <QFileInfo>
 #include <QtGlobal>
 
 ImageSequence::ImageSequence(QObject *parent)
@@ -20,9 +21,12 @@ void ImageSequence::loadSequence(const QStringList &filePaths) {
     }
   }
 
+  emit countChanged();
+
   if (!m_frames.isEmpty()) {
     m_currentIndex = 0;
     emit sequenceLoaded();
+    emit currentIndexChanged(m_currentIndex);
     emit currentImageChanged(m_frames[0].image);
   }
 }
@@ -36,7 +40,6 @@ void ImageSequence::saveSequence(const QString &outputDir,
 
   for (int i = 0; i < m_frames.size(); ++i) {
     QString fileName = QFileInfo(m_frames[i].originalPath).fileName();
-    // If extension is different, change it
     QString newPath = dir.filePath(fileName);
     m_frames[i].image.save(newPath, format.toLatin1().constData());
   }
@@ -70,6 +73,7 @@ QImage ImageSequence::imageAt(int index) const {
 void ImageSequence::setCurrentIndex(int index) {
   if (index >= 0 && index < m_frames.size() && index != m_currentIndex) {
     m_currentIndex = index;
+    emit currentIndexChanged(m_currentIndex);
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
 }
@@ -80,7 +84,7 @@ void ImageSequence::replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps) {
 
   replaceColorsInImage(m_frames[m_currentIndex].image, swaps);
   emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
-  emit currentImageChanged(m_frames[m_currentIndex].image); // Refresh view
+  emit currentImageChanged(m_frames[m_currentIndex].image);
 }
 
 void ImageSequence::replaceColorsInAllFrames(const QList<ColorSwap> &swaps) {
@@ -89,7 +93,6 @@ void ImageSequence::replaceColorsInAllFrames(const QList<ColorSwap> &swaps) {
     emit imageModified(i, m_frames[i].image);
   }
 
-  // Refresh current view if it was changed
   if (m_currentIndex >= 0) {
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
@@ -97,7 +100,7 @@ void ImageSequence::replaceColorsInAllFrames(const QList<ColorSwap> &swaps) {
 
 void ImageSequence::replaceColorsInImage(QImage &img,
                                          const QList<ColorSwap> &swaps) {
-  // Pre-filter enabled swaps to avoid checking disabled ones per pixel
+  // Pre-filter enabled swaps
   QList<ColorSwap> activeSwaps;
   for (const auto &s : swaps) {
     if (s.enabled)
@@ -110,17 +113,15 @@ void ImageSequence::replaceColorsInImage(QImage &img,
   int w = img.width();
   int h = img.height();
 
-  // Iterate pixels
   for (int y = 0; y < h; ++y) {
     QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(y));
     for (int x = 0; x < w; ++x) {
       QRgb current = line[x];
 
-      // Check against all active swaps
       for (const auto &swap : activeSwaps) {
         bool match = false;
         if (swap.tolerance == 0) {
-          if (current == swap.source.rgb()) {
+          if (current == swap.source.rgba()) {
             match = true;
           }
         } else {
@@ -141,8 +142,8 @@ void ImageSequence::replaceColorsInImage(QImage &img,
         }
 
         if (match) {
-          line[x] = swap.dest.rgb();
-          break; // Move to next pixel after first match
+          line[x] = swap.dest.rgba();
+          break;
         }
       }
     }
