@@ -79,3 +79,4 @@ bin/
 out/
 debug/
 release/
+build_release/
