@@ -57,6 +57,10 @@ public:
   // Guide Color Feature
   Q_INVOKABLE void applyGuideCheck(bool allFrames, int radius, int thickness);
 
+  // Alpha Check Feature
+  Q_INVOKABLE void applyAlphaCheck(bool allFrames, const QColor &color,
+                                   int size, int thickness);
+
   Q_INVOKABLE void addCustomColor(const QColor &color);
   QList<QColor> customColors() const;
 

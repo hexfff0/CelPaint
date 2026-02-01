@@ -11,6 +11,7 @@ qt_add_qml_module(CelPaintUI
         views/TimelineView.qml
         dialogs/ColorReplaceDialog.qml
         dialogs/GuideColorDialog.qml
+        dialogs/AlphaCheckDialog.qml
         dialogs/PhotoshopColorPicker.qml
 )
 

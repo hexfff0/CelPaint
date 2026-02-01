@@ -11,7 +11,9 @@ Rectangle {
     signal openSequenceTriggered()
     signal exportTriggered()
     signal batchPaletteTriggered()
+
     signal checkGuideColorTriggered()
+    signal alphaCheckTriggered()
     
     Rectangle { width: parent.width; height: 1; color: Theme.panelBorder; anchors.bottom: parent.bottom }
 
@@ -134,6 +136,10 @@ Rectangle {
                 MenuItem {
                     text: qsTr("Check Guide Color")
                     onTriggered: checkGuideColorTriggered()
+                }
+                MenuItem {
+                    text: qsTr("Alpha Check")
+                    onTriggered: alphaCheckTriggered()
                 }
             }
         }

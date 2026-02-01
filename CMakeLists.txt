@@ -43,6 +43,16 @@ set_target_properties(CelPaint PROPERTIES
 include(GNUInstallDirs)
 install(TARGETS CelPaint
     BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+if(WIN32)
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "C:/Qt/6.10.1/mingw_64/bin")
+    if(WINDEPLOYQT_EXECUTABLE)
+        add_custom_command(TARGET CelPaint POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:CelPaint>/deploy
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} --dir $<TARGET_FILE_DIR:CelPaint> --plugindir $<TARGET_FILE_DIR:CelPaint>/plugins --no-translations --compiler-runtime --no-opengl-sw $<TARGET_FILE:CelPaint>
+            COMMENT "Running windeployqt..."
+        )
+    endif()
+endif()

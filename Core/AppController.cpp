@@ -158,6 +158,27 @@ void AppController::applyGuideCheck(bool allFrames, int radius, int thickness) {
   emit requestImageRefresh();
 }
 
+void AppController::applyAlphaCheck(bool allFrames, const QColor &color,
+                                    int size, int thickness) {
+  if (!m_sequence)
+    return;
+
+  AlphaCheckParams params;
+  params.crossColor = color;
+  params.crossSize = size;
+  params.thickness = thickness;
+  params.applyToAll = allFrames;
+
+  if (allFrames) {
+    m_sequence->applyAlphaCheckToAllFrames(params);
+    setStatusMessage("Applied alpha check to all frames.");
+  } else {
+    m_sequence->applyAlphaCheckToCurrentFrame(params);
+    setStatusMessage("Applied alpha check to current frame.");
+  }
+  emit requestImageRefresh();
+}
+
 void AppController::addCustomColor(const QColor &color) {
   if (!m_customColors.contains(color)) {
     // Limit size? 16 colors for now (2 rows of 8)

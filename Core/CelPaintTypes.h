@@ -19,4 +19,11 @@ struct GuideColorParams {
   bool enabled = true;
 };
 
+struct AlphaCheckParams {
+  QColor crossColor = Qt::red;
+  int crossSize = 10;
+  int thickness = 2;
+  bool applyToAll = false;
+};
+
 #endif // CORE_TYPES_H

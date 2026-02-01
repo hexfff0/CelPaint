@@ -28,16 +28,20 @@ ApplicationWindow {
         onOpenSequenceTriggered: openFileDialog.open()
         onExportTriggered: exportFolderDialog.open()
         onBatchPaletteTriggered: colorReplaceDialog.show()
+
         onCheckGuideColorTriggered: guideColorDialog.show()
+        onAlphaCheckTriggered: alphaCheckDialog.show()
     }
 
     // Main Layout - Vertical Split (Canvas Top, Timeline Bottom)
     SplitView {
+        id: mainSplit
         anchors.fill: parent
         orientation: Qt.Vertical
         handle: Rectangle {
-            implicitWidth: axis === Qt.Vertical ? parent.width : 4
-            implicitHeight: axis === Qt.Vertical ? 4 : parent.height
+            implicitWidth: mainSplit.orientation === Qt.Vertical ? parent.width : 4
+            implicitHeight: mainSplit.orientation === Qt.Vertical ? 4 : parent.height
+
             color: Theme.background
             Rectangle {
                 anchors.centerIn: parent
@@ -92,6 +96,10 @@ ApplicationWindow {
     // Dialogs
     GuideColorDialog {
         id: guideColorDialog
+    }
+
+    AlphaCheckDialog {
+        id: alphaCheckDialog
     }
 
     FileDialog {

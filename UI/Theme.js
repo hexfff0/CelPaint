@@ -18,3 +18,4 @@ var inputBorderActive = "#d07010"
 
 var fontPixelSize = 12
 var smallFontPixelSize = 10
+var headerFontPixelSize = 16

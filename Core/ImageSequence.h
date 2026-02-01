@@ -40,6 +40,10 @@ public:
   void applyGuideCheckToAllFrames(const QList<GuideColorParams> &params);
   void applyGuideCheckToCurrentFrame(const QList<GuideColorParams> &params);
 
+  // New Feature: Alpha Check
+  void applyAlphaCheckToAllFrames(const AlphaCheckParams &params);
+  void applyAlphaCheckToCurrentFrame(const AlphaCheckParams &params);
+
 signals:
   void sequenceLoaded();
   void currentIndexChanged(int index);

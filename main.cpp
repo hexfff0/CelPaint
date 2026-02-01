@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
   QQuickStyle::setStyle("Fusion");
 
   // Create core objects
+
   ImageSequence sequence;
   AppController controller(&sequence);
 

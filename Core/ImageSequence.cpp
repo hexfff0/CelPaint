@@ -1,15 +1,117 @@
 #include "ImageSequence.h"
+#include <QDataStream>
 #include <QDebug>
+#include <QFile>
 #include <QFileInfo>
 #include <QPainter>
+#include <QPen>
 #include <QPoint>
 #include <QVector>
 #include <QtGlobal>
 #include <cmath>
 #include <cstdlib>
+#include <queue>
+#include <vector>
 
 ImageSequence::ImageSequence(QObject *parent)
     : QObject(parent), m_currentIndex(-1) {}
+
+// Minimal TGA Loader (Uncompressed & RLE TrueColor)
+static QImage loadTGA(const QString &filePath) {
+  QFile file(filePath);
+  if (!file.open(QIODevice::ReadOnly))
+    return QImage();
+
+  QDataStream in(&file);
+  in.setByteOrder(QDataStream::LittleEndian);
+
+  quint8 idLength, colorMapType, imageType;
+  quint8 temp8;
+  quint16 temp16;
+  quint16 width, height;
+  quint8 pixelDepth, descriptor;
+
+  in >> idLength >> colorMapType >> imageType;
+  in.skipRawData(5); // Skip color map spec
+  in.skipRawData(4); // Skip x, y origin
+  in >> width >> height >> pixelDepth >> descriptor;
+
+  // Only support TrueColor (2) and RLE TrueColor (10)
+  // Supports 24 and 32 bit depth
+  if ((imageType != 2 && imageType != 10) ||
+      (pixelDepth != 24 && pixelDepth != 32)) {
+    return QImage();
+  }
+
+  in.skipRawData(idLength); // Skip ID field
+  // Skip color map if present (shouldn't be for type 2/10 usually, but logic
+  // implies unsupp if colorMapType=1)
+
+  QImage image(width, height, QImage::Format_ARGB32);
+  image.fill(Qt::transparent);
+
+  bool isRLE = (imageType == 10);
+  int bytesPerPixel = pixelDepth / 8;
+  quint64 totalPixels = width * height;
+  quint64 currentPixel = 0;
+
+  while (currentPixel < totalPixels && !in.atEnd()) {
+    quint8 chunkHeader;
+    if (isRLE) {
+      in >> chunkHeader;
+    } else {
+      chunkHeader = 127; // Treat as raw packet of max length 128 (0-127)
+    }
+
+    bool isRaw = !isRLE || (chunkHeader < 128);
+    int chunkCount = (chunkHeader & 0x7F) + 1;
+
+    if (isRaw) { // Raw packet
+      for (int i = 0; i < chunkCount; ++i) {
+        if (currentPixel >= totalPixels)
+          break;
+
+        quint8 b, g, r, a = 255;
+        in >> b >> g >> r;
+        if (bytesPerPixel == 4)
+          in >> a;
+
+        int x = currentPixel % width;
+        int y = currentPixel / width;
+        if (descriptor & 0x20)
+          y = y;
+        else
+          y = height - 1 - y; // TGA is bottom-up unless bit 5 set
+
+        image.setPixelColor(x, y, QColor(r, g, b, a));
+        currentPixel++;
+      }
+    } else { // RLE packet (Run-length)
+      quint8 b, g, r, a = 255;
+      in >> b >> g >> r;
+      if (bytesPerPixel == 4)
+        in >> a;
+      QColor color(r, g, b, a);
+
+      for (int i = 0; i < chunkCount; ++i) {
+        if (currentPixel >= totalPixels)
+          break;
+
+        int x = currentPixel % width;
+        int y = currentPixel / width;
+        if (descriptor & 0x20)
+          y = y;
+        else
+          y = height - 1 - y;
+
+        image.setPixelColor(x, y, color);
+        currentPixel++;
+      }
+    }
+  }
+
+  return image;
+}
 
 void ImageSequence::loadSequence(const QStringList &filePaths) {
   m_frames.clear();
@@ -17,6 +119,13 @@ void ImageSequence::loadSequence(const QStringList &filePaths) {
 
   for (const QString &path : filePaths) {
     QImage img(path);
+    if (img.isNull()) {
+      // Try manual TGA loader
+      if (path.endsWith(".tga", Qt::CaseInsensitive)) {
+        img = loadTGA(path);
+      }
+    }
+
     if (!img.isNull()) {
       // Convert to ARGB32 for consistent pixel manipulation
       if (img.format() != QImage::Format_ARGB32) {
@@ -189,12 +298,12 @@ static bool processGuideCheckOnImage(QImage &img,
 
     std::fill(visited.begin(), visited.end(),
               false); // Reset visited for each param?
-    // Logic check: if visited is shared across params, blobs might interfere if
-    // they overlap? Original code: `QVector<bool> visited(w * h, false);`
-    // calculated once PER IMAGE? Wait. Original code declared `visited` INSIDE
-    // the params loop: `for (const auto &p : params) { ... QVector<bool>
-    // visited ... }` So yes, it resets for each color check. My static helper
-    // should follow that.
+    // Logic check: if visited is shared across params, blobs might interfere
+    // if they overlap? Original code: `QVector<bool> visited(w * h, false);`
+    // calculated once PER IMAGE? Wait. Original code declared `visited`
+    // INSIDE the params loop: `for (const auto &p : params) { ...
+    // QVector<bool> visited ... }` So yes, it resets for each color check. My
+    // static helper should follow that.
   }
 
   // Actually, let's copy the code logic exactly.
@@ -290,6 +399,105 @@ void ImageSequence::applyGuideCheckToCurrentFrame(
     return;
 
   if (processGuideCheckOnImage(m_frames[m_currentIndex].image, params)) {
+    emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
+    emit currentImageChanged(m_frames[m_currentIndex].image);
+  }
+}
+
+// Helper for Alpha Check
+static bool processAlphaCheckOnImage(QImage &img,
+                                     const AlphaCheckParams &params) {
+  if (img.isNull())
+    return false;
+
+  int w = img.width();
+  int h = img.height();
+  QVector<bool> visited(w * h, false);
+  QList<QPoint> queue;
+  bool modified = false;
+
+  QPainter painter(&img);
+  QPen pen(params.crossColor);
+  pen.setWidth(params.thickness);
+  painter.setPen(pen);
+
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
+      if (visited[y * w + x])
+        continue;
+
+      // Check if pixel is fully transparent
+      if (img.pixelColor(x, y).alpha() == 0) {
+        // Found a new alpha region
+        visited[y * w + x] = true;
+        queue.clear();
+        queue.append(QPoint(x, y));
+
+        long long sumX = 0;
+        long long sumY = 0;
+        int count = 0;
+
+        while (!queue.isEmpty()) {
+          QPoint p = queue.takeFirst();
+          sumX += p.x();
+          sumY += p.y();
+          count++;
+
+          // Neighbors (4-connected)
+          const int dx[] = {0, 0, 1, -1};
+          const int dy[] = {1, -1, 0, 0};
+
+          for (int i = 0; i < 4; ++i) {
+            int nx = p.x() + dx[i];
+            int ny = p.y() + dy[i];
+
+            if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+              if (!visited[ny * w + nx] &&
+                  img.pixelColor(nx, ny).alpha() == 0) {
+                visited[ny * w + nx] = true;
+                queue.append(QPoint(nx, ny));
+              }
+            }
+          }
+        }
+
+        // Draw crosshair at center of mass
+        if (count > 0) {
+          int centerX = sumX / count;
+          int centerY = sumY / count;
+          int halfSize = params.crossSize / 2;
+
+          painter.drawLine(centerX - halfSize, centerY - halfSize,
+                           centerX + halfSize, centerY + halfSize);
+          painter.drawLine(centerX - halfSize, centerY + halfSize,
+                           centerX + halfSize, centerY - halfSize);
+          modified = true;
+        }
+      }
+    }
+  }
+
+  painter.end();
+  return modified;
+}
+
+void ImageSequence::applyAlphaCheckToAllFrames(const AlphaCheckParams &params) {
+  for (int i = 0; i < m_frames.size(); ++i) {
+    if (processAlphaCheckOnImage(m_frames[i].image, params)) {
+      emit imageModified(i, m_frames[i].image);
+    }
+  }
+  if (m_currentIndex >= 0 && m_currentIndex < m_frames.size()) {
+    emit currentImageChanged(m_frames[m_currentIndex].image);
+  }
+}
+
+void ImageSequence::applyAlphaCheckToCurrentFrame(
+    const AlphaCheckParams &params) {
+  if (m_currentIndex < 0 || m_currentIndex >= m_frames.size())
+    return;
+
+  if (processAlphaCheckOnImage(m_frames[m_currentIndex].image, params)) {
     emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
