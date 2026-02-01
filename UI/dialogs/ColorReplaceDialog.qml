@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
-import "Theme.js" as Theme
+import "../Theme.js" as Theme
 
 Window {
     id: root

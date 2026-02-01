@@ -4,12 +4,14 @@ qt_add_qml_module(CelPaintUI
     STATIC
     QML_FILES
         Main.qml
-        CanvasView.qml
-        ColorReplaceDialog.qml
-        TimelineView.qml
-        PhotoshopColorPicker.qml
         Theme.js
-        GuideColorDialog.qml
+        components/AppMenuBar.qml
+        components/TimelineHeader.qml
+        views/CanvasView.qml
+        views/TimelineView.qml
+        dialogs/ColorReplaceDialog.qml
+        dialogs/GuideColorDialog.qml
+        dialogs/PhotoshopColorPicker.qml
 )
 
 target_link_libraries(CelPaintUIplugin PRIVATE
