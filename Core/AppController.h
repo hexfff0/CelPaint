@@ -7,9 +7,9 @@
 #include <QGuiApplication>
 #include <QList>
 #include <QObject>
-#include <QPixmap>
 #include <QScreen>
 #include <QUrl>
+#include <QUndoStack>
 #include <QtGui/QColor>
 
 class ImageSequence;
@@ -46,6 +46,8 @@ public:
   // Property setters (Q_INVOKABLE for direct QML calls)
   Q_INVOKABLE void setCurrentIndex(int index);
   Q_INVOKABLE void setZoomLevel(double level);
+  
+  Q_INVOKABLE void quitApp();
 
   // QML invokable methods
   Q_INVOKABLE void openSequence(const QList<QUrl> &urls);
@@ -63,6 +65,12 @@ public:
 
   Q_INVOKABLE void addCustomColor(const QColor &color);
   QList<QColor> customColors() const;
+
+  // Undo/Redo
+  Q_INVOKABLE void undo();
+  Q_INVOKABLE void redo();
+  Q_INVOKABLE bool canUndo() const;
+  Q_INVOKABLE bool canRedo() const;
 
 signals:
   void titleChanged();
@@ -88,6 +96,7 @@ private:
   QString m_statusMessage;
   double m_zoomLevel = 1.0;
   QList<QColor> m_customColors;
+  QUndoStack *m_undoStack;
 };
 
 #endif // APPCONTROLLER_H

@@ -192,27 +192,47 @@ void ImageSequence::setCurrentIndex(int index) {
   }
 }
 
-void ImageSequence::replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps) {
-  if (m_currentIndex < 0 || m_currentIndex >= m_frames.size())
-    return;
-
-  replaceColorsInImage(m_frames[m_currentIndex].image, swaps);
-  emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
-  emit currentImageChanged(m_frames[m_currentIndex].image);
+void ImageSequence::setImage(int index, const QImage &image) {
+  if (index >= 0 && index < m_frames.size()) {
+    m_frames[index].image = image;
+    emit imageModified(index, image);
+    if (index == m_currentIndex) {
+      emit currentImageChanged(image);
+    }
+  }
 }
 
-void ImageSequence::replaceColorsInAllFrames(const QList<ColorSwap> &swaps) {
-  for (int i = 0; i < m_frames.size(); ++i) {
-    replaceColorsInImage(m_frames[i].image, swaps);
-    emit imageModified(i, m_frames[i].image);
-  }
+QMap<int, QImage> ImageSequence::replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps) {
+  QMap<int, QImage> undoData;
+  if (m_currentIndex < 0 || m_currentIndex >= m_frames.size())
+    return undoData;
 
-  if (m_currentIndex >= 0) {
+  QImage original = m_frames[m_currentIndex].image;
+  if (replaceColorsInImage(m_frames[m_currentIndex].image, swaps)) {
+    undoData.insert(m_currentIndex, original);
+    emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
+  return undoData;
 }
 
-void ImageSequence::replaceColorsInImage(QImage &img,
+QMap<int, QImage> ImageSequence::replaceColorsInAllFrames(const QList<ColorSwap> &swaps) {
+  QMap<int, QImage> undoData;
+  for (int i = 0; i < m_frames.size(); ++i) {
+    QImage original = m_frames[i].image;
+    if (replaceColorsInImage(m_frames[i].image, swaps)) {
+      undoData.insert(i, original);
+      emit imageModified(i, m_frames[i].image);
+    }
+  }
+
+  if (m_currentIndex >= 0 && undoData.contains(m_currentIndex)) {
+    emit currentImageChanged(m_frames[m_currentIndex].image);
+  }
+  return undoData;
+}
+
+bool ImageSequence::replaceColorsInImage(QImage &img,
                                          const QList<ColorSwap> &swaps) {
   // Pre-filter enabled swaps
   QList<ColorSwap> activeSwaps;
@@ -222,11 +242,12 @@ void ImageSequence::replaceColorsInImage(QImage &img,
   }
 
   if (activeSwaps.isEmpty())
-    return;
+    return false;
 
   int w = img.width();
   int h = img.height();
 
+  bool modified = false;
   for (int y = 0; y < h; ++y) {
     QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(y));
     for (int x = 0; x < w; ++x) {
@@ -257,11 +278,13 @@ void ImageSequence::replaceColorsInImage(QImage &img,
 
         if (match) {
           line[x] = swap.dest.rgba();
+          modified = true;
           break;
         }
       }
     }
   }
+  return modified;
 }
 
 // Helper for color matching with tolerance
@@ -376,32 +399,40 @@ static bool processGuideCheckOnImage(QImage &img,
   return modified;
 }
 
-void ImageSequence::applyGuideCheckToAllFrames(
+QMap<int, QImage> ImageSequence::applyGuideCheckToAllFrames(
     const QList<GuideColorParams> &params) {
+  QMap<int, QImage> undoData;
   if (params.isEmpty())
-    return;
+    return undoData;
 
   for (int i = 0; i < m_frames.size(); ++i) {
+    QImage original = m_frames[i].image;
     if (processGuideCheckOnImage(m_frames[i].image, params)) {
+      undoData.insert(i, original);
       emit imageModified(i, m_frames[i].image);
     }
   }
 
-  if (m_currentIndex >= 0) {
+  if (m_currentIndex >= 0 && undoData.contains(m_currentIndex)) {
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
+  return undoData;
 }
 
-void ImageSequence::applyGuideCheckToCurrentFrame(
+QMap<int, QImage> ImageSequence::applyGuideCheckToCurrentFrame(
     const QList<GuideColorParams> &params) {
+  QMap<int, QImage> undoData;
   if (params.isEmpty() || m_currentIndex < 0 ||
       m_currentIndex >= m_frames.size())
-    return;
+    return undoData;
 
+  QImage original = m_frames[m_currentIndex].image;
   if (processGuideCheckOnImage(m_frames[m_currentIndex].image, params)) {
+    undoData.insert(m_currentIndex, original);
     emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
+  return undoData;
 }
 
 // Helper for Alpha Check
@@ -481,24 +512,32 @@ static bool processAlphaCheckOnImage(QImage &img,
   return modified;
 }
 
-void ImageSequence::applyAlphaCheckToAllFrames(const AlphaCheckParams &params) {
+QMap<int, QImage> ImageSequence::applyAlphaCheckToAllFrames(const AlphaCheckParams &params) {
+  QMap<int, QImage> undoData;
   for (int i = 0; i < m_frames.size(); ++i) {
+    QImage original = m_frames[i].image;
     if (processAlphaCheckOnImage(m_frames[i].image, params)) {
+      undoData.insert(i, original);
       emit imageModified(i, m_frames[i].image);
     }
   }
-  if (m_currentIndex >= 0 && m_currentIndex < m_frames.size()) {
+  if (m_currentIndex >= 0 && undoData.contains(m_currentIndex)) {
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
+  return undoData;
 }
 
-void ImageSequence::applyAlphaCheckToCurrentFrame(
+QMap<int, QImage> ImageSequence::applyAlphaCheckToCurrentFrame(
     const AlphaCheckParams &params) {
+  QMap<int, QImage> undoData;
   if (m_currentIndex < 0 || m_currentIndex >= m_frames.size())
-    return;
+    return undoData;
 
+  QImage original = m_frames[m_currentIndex].image;
   if (processAlphaCheckOnImage(m_frames[m_currentIndex].image, params)) {
+    undoData.insert(m_currentIndex, original);
     emit imageModified(m_currentIndex, m_frames[m_currentIndex].image);
     emit currentImageChanged(m_frames[m_currentIndex].image);
   }
+  return undoData;
 }

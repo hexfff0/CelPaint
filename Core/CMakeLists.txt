@@ -2,6 +2,8 @@ add_library(Core STATIC
     ImageSequence.cpp
     # Core Library Sources
     ImageSequence.h
+    UndoCommands.cpp
+    UndoCommands.h
     AppController.cpp
     AppController.h
     CelPaintTypes.h

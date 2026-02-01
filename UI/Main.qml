@@ -16,14 +16,42 @@ ApplicationWindow {
     color: Theme.background
 
     // Ensure application quits when window closes
-    onClosing: Qt.quit()
+    onClosing: function (close) {
+        app.quitApp();
+        close.accepted = true;
+    }
 
     property int refreshCounter: 0
 
     Connections {
         target: app
         function onRequestImageRefresh() {
-            refreshCounter++
+            refreshCounter++;
+        }
+    }
+
+    // Undo Shortcut
+    Shortcut {
+        sequence: "Ctrl+Z"
+        onActivated: {
+            console.log("Undo triggered");
+            app.undo();
+        }
+    }
+
+    // Redo Shortcuts
+    Shortcut {
+        sequence: "Ctrl+Y"
+        onActivated: {
+            console.log("Redo (Ctrl+Y) triggered");
+            app.redo();
+        }
+    }
+    Shortcut {
+        sequence: "Ctrl+Shift+Z"
+        onActivated: {
+            console.log("Redo (Ctrl+Shift+Z) triggered");
+            app.redo();
         }
     }
 
@@ -48,7 +76,8 @@ ApplicationWindow {
             color: Theme.background
             Rectangle {
                 anchors.centerIn: parent
-                width: parent.width; height: 1
+                width: parent.width
+                height: 1
                 color: Theme.panelBorder
             }
         }
@@ -59,13 +88,13 @@ ApplicationWindow {
             SplitView.preferredHeight: 500
             color: "#151515" // Dark canvas background for contrast
             clip: true
-            
+
             CanvasView {
                 id: canvasView
                 anchors.fill: parent
                 colorDialogOpen: colorReplaceDialog.visible // Bind to dialog visibility
             }
-            
+
             // Status Overlay (Creative Pro Style: Minimal text in corner)
             // Status & Zoom Overlay
             RowLayout {
@@ -86,7 +115,7 @@ ApplicationWindow {
                     text: "Zoom: " + Math.round(canvasView.zoomFactor * 100) + "%"
                     font.pixelSize: Theme.smallFontPixelSize
                     flat: true
-                    
+
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -103,7 +132,7 @@ ApplicationWindow {
                     Menu {
                         id: zoomMenu
                         y: -height
-                        
+
                         background: Rectangle {
                             implicitWidth: 150
                             color: Theme.panel
@@ -117,31 +146,33 @@ ApplicationWindow {
                             palette.highlightedText: "white"
                         }
                         MenuSeparator {
-                            contentItem: Rectangle { 
-                                implicitWidth: 150; implicitHeight: 1; color: Theme.panelBorder 
+                            contentItem: Rectangle {
+                                implicitWidth: 150
+                                implicitHeight: 1
+                                color: Theme.panelBorder
                             }
                         }
-                        MenuItem { 
+                        MenuItem {
                             text: "200%"
-                            onTriggered: canvasView.zoomFactor = 2.0 
+                            onTriggered: canvasView.zoomFactor = 2.0
                             palette.text: Theme.text
                             palette.highlightedText: "white"
                         }
-                        MenuItem { 
+                        MenuItem {
                             text: "100%"
-                            onTriggered: canvasView.zoomFactor = 1.0 
+                            onTriggered: canvasView.zoomFactor = 1.0
                             palette.text: Theme.text
                             palette.highlightedText: "white"
                         }
-                        MenuItem { 
+                        MenuItem {
                             text: "50%"
-                            onTriggered: canvasView.zoomFactor = 0.5 
+                            onTriggered: canvasView.zoomFactor = 0.5
                             palette.text: Theme.text
                             palette.highlightedText: "white"
                         }
-                        MenuItem { 
+                        MenuItem {
                             text: "25%"
-                            onTriggered: canvasView.zoomFactor = 0.25 
+                            onTriggered: canvasView.zoomFactor = 0.25
                             palette.text: Theme.text
                             palette.highlightedText: "white"
                         }
@@ -150,7 +181,7 @@ ApplicationWindow {
                             id: menuItem
                             implicitWidth: 150
                             implicitHeight: 30
-                            
+
                             contentItem: Text {
                                 text: menuItem.text
                                 font.pixelSize: Theme.smallFontPixelSize
@@ -172,7 +203,7 @@ ApplicationWindow {
         Rectangle {
             SplitView.preferredHeight: 160
             color: Theme.panel
-            
+
             TimelineHeader {
                 id: timelineHeader
             }
@@ -201,7 +232,7 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFiles
         nameFilters: ["Images (*.png *.jpg *.jpeg *.bmp *.tga *.targa *.tif *.tiff)", "All files (*)"]
         onAccepted: {
-            app.openSequence(selectedFiles)
+            app.openSequence(selectedFiles);
         }
     }
 
@@ -210,7 +241,7 @@ ApplicationWindow {
         title: qsTr("Select Export Directory")
         onAccepted: {
             if (app.saveSequence(selectedFolder)) {
-                successDialog.open()
+                successDialog.open();
             }
         }
     }

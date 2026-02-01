@@ -3,8 +3,13 @@
 #include "GuideCheckModel.h"
 #include "ImageSequence.h"
 #include "TimelineModel.h"
+#include "UndoCommands.h"
+#include <QDebug>
 #include <QFileInfo>
+#include <QGuiApplication>
+#include <QPixmap>
 #include <QUrl>
+#include <QCoreApplication>
 #include <algorithm>
 
 AppController::AppController(ImageSequence *sequence, QObject *parent)
@@ -12,9 +17,11 @@ AppController::AppController(ImageSequence *sequence, QObject *parent)
       m_colorSwapModel(new ColorSwapModel(this)),
       m_guideCheckModel(new GuideCheckModel(this)),
       m_timelineModel(new TimelineModel(sequence, this)),
-      m_statusMessage("Ready"), m_zoomLevel(1.0) {
+      m_undoStack(new QUndoStack(this)) {
   connect(m_sequence, &ImageSequence::sequenceLoaded, this,
           &AppController::onSequenceLoaded);
+  connect(m_sequence, &ImageSequence::currentIndexChanged, this,
+          &AppController::onCurrentImageChanged);
   connect(m_sequence, &ImageSequence::currentImageChanged, this,
           &AppController::onCurrentImageChanged);
   connect(m_sequence, &ImageSequence::currentIndexChanged, this,
@@ -62,6 +69,11 @@ void AppController::setZoomLevel(double level) {
     return;
   m_zoomLevel = level;
   emit zoomLevelChanged();
+}
+
+void AppController::quitApp() {
+    qDebug() << "AppController requesting quit.";
+    QCoreApplication::exit(0);
 }
 
 void AppController::openSequence(const QList<QUrl> &urls) {
@@ -117,19 +129,13 @@ QColor AppController::pickScreenColor(int x, int y) {
 }
 
 void AppController::applyColorReplacement(bool allFrames) {
-  if (!m_sequence || !m_colorSwapModel)
+  if (!m_sequence)
     return;
+  
+  auto swaps = m_colorSwapModel->getSwaps();
+  if (swaps.isEmpty()) return;
 
-  QList<ColorSwap> swaps = m_colorSwapModel->getSwaps();
-  if (allFrames) {
-    m_sequence->replaceColorsInAllFrames(swaps);
-    setStatusMessage("Replaced colors in all frames.");
-  } else {
-    m_sequence->replaceColorsInCurrentFrame(swaps);
-    setStatusMessage("Replaced colors in current frame.");
-  }
-
-  emit requestImageRefresh();
+  m_undoStack->push(new ColorSwapCommand(m_sequence, swaps, allFrames));
 }
 
 GuideCheckModel *AppController::guideCheckModel() const {
@@ -147,14 +153,13 @@ void AppController::applyGuideCheck(bool allFrames, int radius, int thickness) {
     return;
   }
 
-  if (allFrames) {
-    m_sequence->applyGuideCheckToAllFrames(params);
-    setStatusMessage("Applied guide checks (circles) to all frames.");
-  } else {
-    m_sequence->applyGuideCheckToCurrentFrame(params);
-    setStatusMessage("Applied guide checks (circles) to current frame.");
+  if (params.isEmpty()) {
+    setStatusMessage("No guide checks enabled.");
+    return;
   }
-  emit requestImageRefresh();
+
+  m_undoStack->push(new GuideCheckCommand(m_sequence, params, allFrames));
+  setStatusMessage(allFrames ? "Applied guide checks to all frames." : "Applied guide checks to current frame.");
 }
 
 void AppController::applyAlphaCheck(bool allFrames, const QColor &color,
@@ -168,14 +173,8 @@ void AppController::applyAlphaCheck(bool allFrames, const QColor &color,
   params.thickness = thickness;
   params.applyToAll = allFrames;
 
-  if (allFrames) {
-    m_sequence->applyAlphaCheckToAllFrames(params);
-    setStatusMessage("Applied alpha check to all frames.");
-  } else {
-    m_sequence->applyAlphaCheckToCurrentFrame(params);
-    setStatusMessage("Applied alpha check to current frame.");
-  }
-  emit requestImageRefresh();
+  m_undoStack->push(new AlphaCheckCommand(m_sequence, params, allFrames));
+  setStatusMessage(allFrames ? "Applied alpha check to all frames." : "Applied alpha check to current frame.");
 }
 
 void AppController::addCustomColor(const QColor &color) {
@@ -191,7 +190,13 @@ void AppController::addCustomColor(const QColor &color) {
 
 QList<QColor> AppController::customColors() const { return m_customColors; }
 
+void AppController::undo() { m_undoStack->undo(); }
+void AppController::redo() { m_undoStack->redo(); }
+bool AppController::canUndo() const { return m_undoStack->canUndo(); }
+bool AppController::canRedo() const { return m_undoStack->canRedo(); }
+
 void AppController::onSequenceLoaded() {
+  m_undoStack->clear();
   setStatusMessage(QString("Loaded %1 frames").arg(m_sequence->count()));
   m_zoomLevel = 1.0;
   emit zoomLevelChanged();

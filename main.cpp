@@ -23,6 +23,9 @@ int main(int argc, char *argv[]) {
 
   // Use Fusion style for consistent look
   QQuickStyle::setStyle("Fusion");
+  
+  // Ensure app quits when last window closes
+  app.setQuitOnLastWindowClosed(true);
 
   // Create core objects
 
@@ -40,6 +43,10 @@ int main(int argc, char *argv[]) {
 
   // Load main QML from resource
   engine.load(QUrl(QStringLiteral("qrc:/qt/qml/CelPaint/UI/Main.qml")));
+
+
+
+  QObject::connect(&engine, &QQmlApplicationEngine::quit, &app, &QGuiApplication::quit);
 
   if (engine.rootObjects().isEmpty()) {
     qCritical() << "Failed to load QML";

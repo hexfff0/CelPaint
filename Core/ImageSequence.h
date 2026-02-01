@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QImage>
 #include <QList>
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QtGui/QColor>
@@ -31,18 +32,19 @@ public:
 
   // Manipulation
   void setCurrentIndex(int index);
+  void setImage(int index, const QImage &image);
 
   // Core Logic: Color Replacement
-  void replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps);
-  void replaceColorsInAllFrames(const QList<ColorSwap> &swaps);
+  QMap<int, QImage> replaceColorsInCurrentFrame(const QList<ColorSwap> &swaps);
+  QMap<int, QImage> replaceColorsInAllFrames(const QList<ColorSwap> &swaps);
 
   // New Feature: Check Guide Color
-  void applyGuideCheckToAllFrames(const QList<GuideColorParams> &params);
-  void applyGuideCheckToCurrentFrame(const QList<GuideColorParams> &params);
+  QMap<int, QImage> applyGuideCheckToAllFrames(const QList<GuideColorParams> &params);
+  QMap<int, QImage> applyGuideCheckToCurrentFrame(const QList<GuideColorParams> &params);
 
   // New Feature: Alpha Check
-  void applyAlphaCheckToAllFrames(const AlphaCheckParams &params);
-  void applyAlphaCheckToCurrentFrame(const AlphaCheckParams &params);
+  QMap<int, QImage> applyAlphaCheckToAllFrames(const AlphaCheckParams &params);
+  QMap<int, QImage> applyAlphaCheckToCurrentFrame(const AlphaCheckParams &params);
 
 signals:
   void sequenceLoaded();
@@ -60,7 +62,7 @@ private:
   QList<Frame> m_frames;
   int m_currentIndex = -1;
 
-  void replaceColorsInImage(QImage &img, const QList<ColorSwap> &swaps);
+  bool replaceColorsInImage(QImage &img, const QList<ColorSwap> &swaps);
 };
 
 #endif // IMAGESEQUENCE_H
