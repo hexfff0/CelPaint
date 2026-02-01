@@ -5,8 +5,20 @@ Item {
     id: root
     clip: true
     
+    property alias zoomFactor: zoomArea.scaleFactor
+    property alias contentWidth: displayImage.width
+    property alias contentHeight: displayImage.height
     property bool colorDialogOpen: false
-    property real zoomLevel: zoomArea.scaleFactor
+
+    function fitToScreen() {
+        let sx = width / displayImage.sourceSize.width
+        let sy = height / displayImage.sourceSize.height
+        let scale = Math.min(sx, sy) * 0.9 // 90% fit
+        zoomArea.scaleFactor = Math.max(zoomArea.minScale, Math.min(zoomArea.maxScale, scale))
+        zoomArea.tx = 0
+        zoomArea.ty = 0
+        app.setZoomLevel(zoomArea.scaleFactor)
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -130,7 +142,7 @@ Item {
             }
         }
     }
-    
+
     Text {
         anchors.bottom: parent.bottom
         anchors.left: parent.left

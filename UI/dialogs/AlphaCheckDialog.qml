@@ -11,7 +11,7 @@ Window {
     visible: false
     title: qsTr("Alpha Check")
     color: Theme.background
-    flags: Qt.Dialog
+    flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
     property color markerColor: "red"
 

@@ -67,14 +67,104 @@ ApplicationWindow {
             }
             
             // Status Overlay (Creative Pro Style: Minimal text in corner)
-            Text {
+            // Status & Zoom Overlay
+            RowLayout {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 10
-                text: app.statusMessage // Removed Zoom display here as requested (redundant if shown elsewhere, or removing one if multiple exist)
-                color: Theme.text
-                font.pixelSize: Theme.smallFontPixelSize
-                opacity: 0.7
+                spacing: 20
+
+                Label {
+                    text: app.statusMessage
+                    color: Theme.text
+                    font.pixelSize: Theme.smallFontPixelSize
+                    opacity: 0.7
+                }
+
+                Button {
+                    id: zoomBtn
+                    text: "Zoom: " + Math.round(canvasView.zoomFactor * 100) + "%"
+                    font.pixelSize: Theme.smallFontPixelSize
+                    flat: true
+                    
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: parent.hovered ? Theme.accent : Theme.text
+                        horizontalAlignment: Text.AlignRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        color: "transparent"
+                    }
+
+                    onClicked: zoomMenu.open()
+
+                    Menu {
+                        id: zoomMenu
+                        y: -height
+                        
+                        background: Rectangle {
+                            implicitWidth: 150
+                            color: Theme.panel
+                            border.color: Theme.panelBorder
+                        }
+
+                        MenuItem {
+                            text: qsTr("Fit to Screen")
+                            onTriggered: canvasView.fitToScreen()
+                            palette.text: Theme.text
+                            palette.highlightedText: "white"
+                        }
+                        MenuSeparator {
+                            contentItem: Rectangle { 
+                                implicitWidth: 150; implicitHeight: 1; color: Theme.panelBorder 
+                            }
+                        }
+                        MenuItem { 
+                            text: "200%"
+                            onTriggered: canvasView.zoomFactor = 2.0 
+                            palette.text: Theme.text
+                            palette.highlightedText: "white"
+                        }
+                        MenuItem { 
+                            text: "100%"
+                            onTriggered: canvasView.zoomFactor = 1.0 
+                            palette.text: Theme.text
+                            palette.highlightedText: "white"
+                        }
+                        MenuItem { 
+                            text: "50%"
+                            onTriggered: canvasView.zoomFactor = 0.5 
+                            palette.text: Theme.text
+                            palette.highlightedText: "white"
+                        }
+                        MenuItem { 
+                            text: "25%"
+                            onTriggered: canvasView.zoomFactor = 0.25 
+                            palette.text: Theme.text
+                            palette.highlightedText: "white"
+                        }
+
+                        delegate: MenuItem {
+                            id: menuItem
+                            implicitWidth: 150
+                            implicitHeight: 30
+                            
+                            contentItem: Text {
+                                text: menuItem.text
+                                font.pixelSize: Theme.smallFontPixelSize
+                                color: menuItem.highlighted ? "white" : Theme.text
+                                horizontalAlignment: Text.AlignLeft
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 10
+                            }
+                            background: Rectangle {
+                                color: menuItem.highlighted ? Theme.accent : "transparent"
+                            }
+                        }
+                    }
+                }
             }
         }
 

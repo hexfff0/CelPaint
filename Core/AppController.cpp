@@ -62,7 +62,6 @@ void AppController::setZoomLevel(double level) {
     return;
   m_zoomLevel = level;
   emit zoomLevelChanged();
-  setStatusMessage(QString("Zoom: %1%").arg(int(m_zoomLevel * 100)));
 }
 
 void AppController::openSequence(const QList<QUrl> &urls) {

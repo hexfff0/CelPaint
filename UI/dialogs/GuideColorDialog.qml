@@ -11,7 +11,7 @@ Window {
     title: qsTr("Guide Color Check")
     visible: false
     color: Theme.background
-    flags: Qt.Dialog
+    flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
     // Removed properties to match ColorReplaceDialog scope usage
 
