@@ -15,6 +15,9 @@ ApplicationWindow {
     title: app.currentTitle
     color: Theme.background
 
+    // Ensure application quits when window closes
+    onClosing: Qt.quit()
+
     property int refreshCounter: 0
 
     Connections {

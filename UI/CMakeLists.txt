@@ -1,3 +1,6 @@
+qt_policy(SET QTP0001 NEW)
+qt_policy(SET QTP0004 NEW)
+
 qt_add_qml_module(CelPaintUI
     URI CelPaint.UI
     VERSION 1.0

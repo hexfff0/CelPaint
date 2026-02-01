@@ -21,6 +21,7 @@ add_subdirectory(UI)
 # Main executable
 qt_add_executable(CelPaint
     main.cpp
+    app.rc
 )
 
 target_link_libraries(CelPaint PRIVATE

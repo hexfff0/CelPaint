@@ -8,7 +8,7 @@ Window {
     id: root
     width: 600
     height: 700
-    title: qsTr("Batch Palette (色置換)")
+    title: qsTr("Batch Palette")
     visible: false
     color: Theme.background
     flags: Qt.Dialog

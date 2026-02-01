@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
   engine.rootContext()->setContextProperty("app", &controller);
 
   // Load main QML from resource
-  engine.load(QUrl(QStringLiteral("qrc:/CelPaint/UI/Main.qml")));
+  engine.load(QUrl(QStringLiteral("qrc:/qt/qml/CelPaint/UI/Main.qml")));
 
   if (engine.rootObjects().isEmpty()) {
     qCritical() << "Failed to load QML";

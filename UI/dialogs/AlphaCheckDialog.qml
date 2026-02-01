@@ -1,16 +1,19 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
+import QtQuick.Window
 import "../Theme.js" as Theme
 
 Window {
     id: root
-    width: 400
-    height: 350
+    width: 450
+    height: 400
     visible: false
     title: qsTr("Alpha Check")
-    color: Theme.panel
+    color: Theme.background
+    flags: Qt.Dialog
+
+    property color markerColor: "red"
 
     // Prevent closing, just hide
     onClosing: (close) => {
@@ -20,137 +23,157 @@ Window {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
+        anchors.margins: 15
         spacing: 15
 
-        Text {
-            text: qsTr("Mark Enclosed Alpha Regions")
+        // Header
+        Label {
+            text: qsTr("Alpha Channel Inspection")
             color: Theme.text
-            font.pixelSize: Theme.headerFontPixelSize
+            font.pixelSize: Theme.fontPixelSize
             font.bold: true
         }
         
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: Theme.panelBorder
-        }
+        Divider { Layout.fillWidth: true }
 
-        // Cross Color
-        RowLayout {
-            Text {
-                text: qsTr("Cross Color:")
+        // Settings Grid
+        GridLayout {
+            columns: 3
+            Layout.fillWidth: true
+            rowSpacing: 15
+            columnSpacing: 10
+
+            // Row 1: Indicator Color
+            Label { 
+                text: qsTr("Indicator Color:")
                 color: Theme.text
                 font.pixelSize: Theme.fontPixelSize
-                Layout.preferredWidth: 100
+                Layout.alignment: Qt.AlignVCenter
             }
-
             Rectangle {
-                width: 30
-                height: 30
-                color: colorDialog.selectedColor
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 30
+                color: root.markerColor
                 border.color: Theme.panelBorder
                 border.width: 1
-
+                
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: colorDialog.open()
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        colorPicker.setColor(root.markerColor)
+                        colorPicker.show()
+                    }
                 }
             }
-            
-            Text {
-                text: colorDialog.selectedColor.toString()
-                color: Theme.text
+            Label { 
+                text: "(" + root.markerColor.toString() + ")"
+                color: Theme.textDisabled
                 font.pixelSize: Theme.smallFontPixelSize
                 Layout.fillWidth: true
             }
-        }
 
-        // Cross Size
-        RowLayout {
-            Text {
-                text: qsTr("Size:")
+            // Row 2: Crosshair Size
+            Label {
+                text: qsTr("Crosshair Size:")
                 color: Theme.text
                 font.pixelSize: Theme.fontPixelSize
-                Layout.preferredWidth: 100
             }
             Slider {
                 id: sizeSlider
-                from: 2
+                from: 4
                 to: 100
                 value: 20
                 stepSize: 1
                 Layout.fillWidth: true
             }
-            Text {
-                text: sizeSlider.value.toString()
+            Label {
+                text: Math.round(sizeSlider.value) + " px"
                 color: Theme.text
                 font.pixelSize: Theme.fontPixelSize
-                Layout.preferredWidth: 40
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignRight
             }
-        }
 
-        // Thickness
-        RowLayout {
-            Text {
-                text: qsTr("Thickness:")
+            // Row 3: Line Stroke
+            Label {
+                text: qsTr("Line Stroke:")
                 color: Theme.text
                 font.pixelSize: Theme.fontPixelSize
-                Layout.preferredWidth: 100
             }
             Slider {
                 id: thicknessSlider
                 from: 1
-                to: 20
+                to: 10
                 value: 2
                 stepSize: 1
                 Layout.fillWidth: true
             }
-            Text {
-                text: thicknessSlider.value.toString()
+            Label {
+                text: Math.round(thicknessSlider.value) + " px"
                 color: Theme.text
                 font.pixelSize: Theme.fontPixelSize
-                Layout.preferredWidth: 40
+                Layout.preferredWidth: 60
                 horizontalAlignment: Text.AlignRight
             }
         }
 
         Item { Layout.fillHeight: true } // Spacer
 
+        Divider { Layout.fillWidth: true }
+
         // Action Buttons
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
 
-            Button {
-                text: qsTr("Apply (Current)")
+            StandardButton {
+                text: qsTr("Check Current Frame")
                 Layout.fillWidth: true
                 onClicked: {
-                    app.applyAlphaCheck(false, colorDialog.selectedColor, sizeSlider.value, thicknessSlider.value)
-                    // Don't close, user might want to try other settings
+                    app.applyAlphaCheck(false, root.markerColor, sizeSlider.value, thicknessSlider.value)
                 }
             }
 
-            Button {
-                text: qsTr("Apply (All Frames)")
+            StandardButton {
+                text: qsTr("Check Entire Sequence")
                 Layout.fillWidth: true
+                isAccent: true
                 onClicked: {
-                    app.applyAlphaCheck(true, colorDialog.selectedColor, sizeSlider.value, thicknessSlider.value)
+                    app.applyAlphaCheck(true, root.markerColor, sizeSlider.value, thicknessSlider.value)
                 }
             }
-        }
-        
-        Button {
-            text: qsTr("Close")
-            Layout.alignment: Qt.AlignRight
-            onClicked: root.hide()
         }
     }
 
-    ColorDialog {
-        id: colorDialog
-        title: qsTr("Select Cross Color")
-        selectedColor: "red"
+    PhotoshopColorPicker {
+        id: colorPicker
+        title: qsTr("Select Indicator Color")
+        onAccepted: (color) => {
+            root.markerColor = color
+        }
+    }
+
+    // Helper Components (Standardized)
+    component Divider : Rectangle {
+        height: 1
+        color: Theme.panelBorder
+    }
+
+    component StandardButton : Button {
+        property bool isAccent: false
+        background: Rectangle {
+            color: parent.down ? Theme.buttonPressed : (parent.hovered ? Theme.buttonHover : (isAccent ? Theme.accent : Theme.buttonNormal))
+            radius: 2
+            border.color: Theme.panelBorder
+        }
+        contentItem: Text {
+            text: parent.text
+            color: isAccent ? "white" : Theme.text
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: Theme.fontPixelSize
+            font.bold: isAccent
+        }
     }
 }

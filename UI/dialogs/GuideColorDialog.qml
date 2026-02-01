@@ -23,7 +23,7 @@ Window {
 
         // Header
         Label {
-            text: qsTr("Check Guide Color")
+            text: qsTr("Guide Color Check")
             font.bold: true
             font.pixelSize: Theme.fontPixelSize
             color: Theme.text
