@@ -15,11 +15,19 @@ qt_add_qml_module(CelPaintUI
         dialogs/ColorReplaceDialog.qml
         dialogs/GuideColorDialog.qml
         dialogs/AlphaCheckDialog.qml
-        dialogs/PhotoshopColorPicker.qml
+        dialogs/ColorPicker.qml
+    RESOURCES
+        icon/Eye-Dropper--Streamline-Font-Awesome.svg
 )
 
 target_link_libraries(CelPaintUIplugin PRIVATE
     Qt${QT_VERSION_MAJOR}::Quick
     Qt${QT_VERSION_MAJOR}::QuickControls2
     Core
+)
+
+set_target_properties(CelPaintUI PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/CelPaint/UI"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/CelPaint/UI"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/CelPaint/UI"
 )

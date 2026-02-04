@@ -70,8 +70,8 @@ ApplicationWindow {
         anchors.fill: parent
         orientation: Qt.Vertical
         handle: Rectangle {
-            implicitWidth: mainSplit.orientation === Qt.Vertical ? parent.width : 4
-            implicitHeight: mainSplit.orientation === Qt.Vertical ? 4 : parent.height
+            implicitWidth: mainSplit.orientation === Qt.Vertical ? parent.width : 1
+            implicitHeight: mainSplit.orientation === Qt.Vertical ? 1 : parent.height
 
             color: Theme.background
             Rectangle {
@@ -86,7 +86,7 @@ ApplicationWindow {
         Rectangle {
             SplitView.fillHeight: true
             SplitView.preferredHeight: 500
-            color: "#151515" // Dark canvas background for contrast
+            color: "#1f1f1f" // Dark canvas background for contrast (VS Code Editor bg)
             clip: true
 
             CanvasView {

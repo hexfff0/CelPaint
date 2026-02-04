@@ -8,13 +8,12 @@ Window {
     id: root
     width: 600
     height: 700
-    title: qsTr("Guide Color Check")
+    title: qsTr("Validate Guides")
     visible: false
     color: Theme.background
     flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
     // Removed properties to match ColorReplaceDialog scope usage
-
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,7 +22,7 @@ Window {
 
         // Header
         Label {
-            text: qsTr("Guide Color Check")
+            text: qsTr("Validate Guides")
             font.bold: true
             font.pixelSize: Theme.fontPixelSize
             color: Theme.text
@@ -33,16 +32,52 @@ Window {
         RowLayout {
             Layout.fillWidth: true
             spacing: 5
-            Label { text: "No."; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 30; horizontalAlignment: Text.AlignHCenter }
-            Label { text: "Use"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignHCenter }
-            Label { text: "Source (Detect)"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 90; horizontalAlignment: Text.AlignHCenter }
-            Item { width: 10 } // Arrow space
-            Label { text: "Selection (Circle)"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 90; horizontalAlignment: Text.AlignHCenter }
-            Label { text: "Tolerance"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
-            Item { Layout.fillWidth: true }
+            Label {
+                text: "No."
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 30
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Label {
+                text: "Use"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 40
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Label {
+                text: "Source (Detect)"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 60
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Item {
+                width: 10
+            } // Arrow space
+            Label {
+                text: "Selection (Circle)"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 60
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Label {
+                text: "Tolerance"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 80
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
-        Divider { Layout.fillWidth: true }
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Color List
         ListView {
@@ -67,7 +102,7 @@ Window {
                     spacing: 5
 
                     // No.
-                    Label { 
+                    Label {
                         text: (index + 1).toString()
                         color: Theme.text
                         font.pixelSize: Theme.smallFontPixelSize
@@ -81,7 +116,7 @@ Window {
                         Layout.preferredWidth: 40
                         Layout.alignment: Qt.AlignHCenter
                         onToggled: app.guideCheckModel.setEnabled(index, checked)
-                        
+
                         indicator: Rectangle {
                             implicitWidth: 16
                             implicitHeight: 16
@@ -90,7 +125,7 @@ Window {
                             radius: 2
                             color: parent.checked ? Theme.accent : Theme.inputBackground
                             border.color: Theme.panelBorder
-                            
+
                             Text {
                                 anchors.centerIn: parent
                                 text: "✔"
@@ -103,36 +138,42 @@ Window {
 
                     // Source Color
                     Rectangle {
-                        Layout.preferredWidth: 90; Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Layout.fillHeight: true
                         Layout.margins: 4
                         color: model.sourceColor
                         border.color: Theme.panelBorder
                         border.width: 1
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                colorPicker.targetIndex = index
-                                colorPicker.targetRole = "source"
-                                colorPicker.setColor(model.sourceColor)
-                                colorPicker.show()
+                                colorPicker.targetIndex = index;
+                                colorPicker.targetRole = "source";
+                                colorPicker.setColor(model.sourceColor);
+                                colorPicker.show();
                             }
                         }
-                        
+
                         Text {
-                             anchors.centerIn: parent
-                             text: model.sourceColor.toString()
-                             visible: false // Hidden, mostly for debug
+                            anchors.centerIn: parent
+                            text: model.sourceColor.toString()
+                            visible: false // Hidden, mostly for debug
                         }
                     }
 
                     // Arrow
-                    Label { text: "→"; color: Theme.textDisabled; Layout.alignment: Qt.AlignHCenter }
+                    Label {
+                        text: "→"
+                        color: Theme.textDisabled
+                        Layout.alignment: Qt.AlignHCenter
+                    }
 
                     // Selection Color
                     Rectangle {
-                        Layout.preferredWidth: 90; Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Layout.fillHeight: true
                         Layout.margins: 4
                         color: model.selectionColor
                         border.color: Theme.panelBorder
@@ -142,31 +183,32 @@ Window {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                colorPicker.targetIndex = index
-                                colorPicker.targetRole = "selection"
-                                colorPicker.setColor(model.selectionColor)
-                                colorPicker.show()
+                                colorPicker.targetIndex = index;
+                                colorPicker.targetRole = "selection";
+                                colorPicker.setColor(model.selectionColor);
+                                colorPicker.show();
                             }
                         }
                     }
-                    
+
                     // Tolerance Input
                     SpinBox {
                         id: toleranceSpinBox
-                        from: 0; to: 255
+                        from: 0
+                        to: 255
                         value: model.tolerance
                         editable: true
                         Layout.preferredWidth: 80
                         Layout.preferredHeight: 30
-                        
+
                         onValueModified: {
                             if (linkToleranceBtn.checked) {
-                                app.guideCheckModel.setAllTolerances(value)
+                                app.guideCheckModel.setAllTolerances(value);
                             } else {
-                                app.guideCheckModel.setTolerance(index, value)
+                                app.guideCheckModel.setTolerance(index, value);
                             }
                         }
-                        
+
                         contentItem: TextInput {
                             text: toleranceSpinBox.textFromValue(toleranceSpinBox.value, toleranceSpinBox.locale)
                             font.pixelSize: Theme.smallFontPixelSize
@@ -185,7 +227,9 @@ Window {
                         }
                     }
 
-                    Item { Layout.fillWidth: true } // Spacer
+                    Item {
+                        Layout.fillWidth: true
+                    } // Spacer
 
                     // Remove Button
                     Button {
@@ -197,7 +241,10 @@ Window {
                             radius: 2
                         }
                         contentItem: Text {
-                            text: parent.text; color: Theme.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                            text: parent.text
+                            color: Theme.text
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                         onClicked: app.guideCheckModel.removeCheck(index)
                     }
@@ -205,18 +252,20 @@ Window {
             }
         }
 
-        Divider { Layout.fillWidth: true }
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Link Tolerance Toggle
         RowLayout {
             Layout.fillWidth: true
-            
+
             Button {
                 id: linkToleranceBtn
                 checkable: true
                 checked: true // Default to linked
                 text: checked ? qsTr("🔗 Link Tolerance (ON)") : qsTr("🔗 Link Tolerance (OFF)")
-                
+
                 background: Rectangle {
                     color: parent.checked ? Theme.selection : "transparent"
                     border.color: Theme.panelBorder
@@ -230,11 +279,15 @@ Window {
                     font.pixelSize: Theme.smallFontPixelSize
                 }
             }
-            
-            Item { Layout.fillWidth: true }
+
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
-        Divider { Layout.fillWidth: true }
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Parameters (Global)
         GridLayout {
@@ -243,79 +296,103 @@ Window {
             rowSpacing: 10
             columnSpacing: 10
 
-            Text { text: "Circle Radius:"; color: Theme.text }
+            Text {
+                text: "Circle Radius:"
+                color: Theme.text
+            }
             RowLayout {
                 Slider {
                     id: radSlider
-                    from: 5; to: 100
+                    from: 5
+                    to: 100
                     value: 20
                     Layout.fillWidth: true
                 }
-                Text { text: Math.round(radSlider.value) + "px"; color: Theme.text; Layout.preferredWidth: 40 }
+                Text {
+                    text: Math.round(radSlider.value) + "px"
+                    color: Theme.text
+                    Layout.preferredWidth: 40
+                }
             }
 
-            Text { text: "Line Thickness:"; color: Theme.text }
+            Text {
+                text: "Line Thickness:"
+                color: Theme.text
+            }
             RowLayout {
                 Slider {
                     id: thickSlider
-                    from: 1; to: 10
+                    from: 1
+                    to: 10
                     value: 3
                     Layout.fillWidth: true
                 }
-                Text { text: Math.round(thickSlider.value) + "px"; color: Theme.text; Layout.preferredWidth: 40 }
+                Text {
+                    text: Math.round(thickSlider.value) + "px"
+                    color: Theme.text
+                    Layout.preferredWidth: 40
+                }
+            }
+        }
+
+        Divider {
+            Layout.fillWidth: true
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
+
+            StandardButton {
+                text: qsTr("+ Add Pair")
+                Layout.fillWidth: true
+                onClicked: app.guideCheckModel.addCheck(Qt.rgba(1, 0, 0, 1), Qt.rgba(1, 1, 0, 1), 0)
             }
         }
 
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            
+
             StandardButton {
-                text: qsTr("+ Add New Pair")
+                text: qsTr("Check Current")
                 Layout.fillWidth: true
-                onClicked: app.guideCheckModel.addCheck(Qt.rgba(1,0,0,1), Qt.rgba(1,1,0,1), 0)
-            }
-        }
-        
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            
-            StandardButton {
-                text: qsTr("Apply (Current)")
-                Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 onClicked: {
-                    app.applyGuideCheck(false, Math.round(radSlider.value), Math.round(thickSlider.value))
+                    app.applyGuideCheck(false, Math.round(radSlider.value), Math.round(thickSlider.value));
                 }
             }
             StandardButton {
-                text: qsTr("Apply (All Frames)")
+                text: qsTr("Check All")
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 isAccent: true
                 onClicked: {
-                    app.applyGuideCheck(true, Math.round(radSlider.value), Math.round(thickSlider.value))
+                    app.applyGuideCheck(true, Math.round(radSlider.value), Math.round(thickSlider.value));
                 }
             }
         }
     }
 
-    PhotoshopColorPicker {
+    ColorPicker {
         id: colorPicker
-        onAccepted: (color) => {
+        onAccepted: color => {
             if (targetIndex >= 0) {
-                if (targetRole === "source") app.guideCheckModel.setSourceColor(targetIndex, color)
-                else if (targetRole === "selection") app.guideCheckModel.setSelectionColor(targetIndex, color)
+                if (targetRole === "source")
+                    app.guideCheckModel.setSourceColor(targetIndex, color);
+                else if (targetRole === "selection")
+                    app.guideCheckModel.setSelectionColor(targetIndex, color);
             }
         }
     }
 
     // Helper Components
-    component Divider : Rectangle {
+    component Divider: Rectangle {
         height: 1
         color: Theme.panelBorder
     }
 
-    component StandardButton : Button {
+    component StandardButton: Button {
         property bool isAccent: false
         background: Rectangle {
             color: parent.down ? Theme.buttonPressed : (parent.hovered ? Theme.buttonHover : (isAccent ? Theme.accent : Theme.buttonNormal))

@@ -5,17 +5,22 @@ import "../Theme.js" as Theme
 
 Rectangle {
     width: parent.width
-    height: 30
+    height: 28
     color: Theme.background
 
-    signal openSequenceTriggered()
-    signal exportTriggered()
-    signal batchPaletteTriggered()
+    signal openSequenceTriggered
+    signal exportTriggered
+    signal batchPaletteTriggered
 
-    signal checkGuideColorTriggered()
-    signal alphaCheckTriggered()
-    
-    Rectangle { width: parent.width; height: 1; color: Theme.panelBorder; anchors.bottom: parent.bottom }
+    signal checkGuideColorTriggered
+    signal alphaCheckTriggered
+
+    Rectangle {
+        width: parent.width
+        height: 1
+        color: Theme.panelBorder
+        anchors.bottom: parent.bottom
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -37,11 +42,11 @@ Rectangle {
                 verticalAlignment: Text.AlignVCenter
             }
             onClicked: fileMenu.open()
-            
+
             Menu {
                 id: fileMenu
                 y: parent.height
-                
+
                 background: Rectangle {
                     implicitWidth: 200
                     color: Theme.panel
@@ -106,7 +111,7 @@ Rectangle {
             Menu {
                 id: toolsMenu
                 y: parent.height
-                
+
                 background: Rectangle {
                     implicitWidth: 200
                     color: Theme.panel
@@ -130,20 +135,22 @@ Rectangle {
                 }
 
                 MenuItem {
-                    text: qsTr("Batch Palette")
+                    text: qsTr("Remap Colors")
                     onTriggered: batchPaletteTriggered()
                 }
                 MenuItem {
-                    text: qsTr("Check Guide Color")
+                    text: qsTr("Validate Guides")
                     onTriggered: checkGuideColorTriggered()
                 }
                 MenuItem {
-                    text: qsTr("Alpha Check")
+                    text: qsTr("Validate Alpha")
                     onTriggered: alphaCheckTriggered()
                 }
             }
         }
-        
-        Item { Layout.fillWidth: true } // Spacer
+
+        Item {
+            Layout.fillWidth: true
+        } // Spacer
     }
 }

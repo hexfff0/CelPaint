@@ -8,7 +8,7 @@ Window {
     id: root
     width: 600
     height: 700
-    title: qsTr("Batch Palette")
+    title: qsTr("Color Remapping")
     visible: false
     color: Theme.background
     flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
@@ -20,7 +20,7 @@ Window {
 
         // Header
         Label {
-            text: qsTr("Batch Palette")
+            text: qsTr("Color Remapping")
             font.bold: true
             font.pixelSize: Theme.fontPixelSize
             color: Theme.text
@@ -30,16 +30,52 @@ Window {
         RowLayout {
             Layout.fillWidth: true
             spacing: 5
-            Label { text: "No."; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 30; horizontalAlignment: Text.AlignHCenter }
-            Label { text: "Use"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 40; horizontalAlignment: Text.AlignHCenter }
-            Label { text: "Source"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 60; horizontalAlignment: Text.AlignHCenter }
-            Item { width: 20 } // Arrow space
-            Label { text: "Target"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 60; horizontalAlignment: Text.AlignHCenter }
-            Label { text: "Tolerance"; color: Theme.textDisabled; font.pixelSize: Theme.smallFontPixelSize; Layout.preferredWidth: 80; horizontalAlignment: Text.AlignHCenter }
-            Item { Layout.fillWidth: true }
+            Label {
+                text: "No."
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 30
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Label {
+                text: "Use"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 40
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Label {
+                text: "Source"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 60
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Item {
+                width: 20
+            } // Arrow space
+            Label {
+                text: "Target"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 60
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Label {
+                text: "Tolerance"
+                color: Theme.textDisabled
+                font.pixelSize: Theme.smallFontPixelSize
+                Layout.preferredWidth: 80
+                horizontalAlignment: Text.AlignHCenter
+            }
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
-        Divider { Layout.fillWidth: true }
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Color List
         ListView {
@@ -64,7 +100,7 @@ Window {
                     spacing: 5
 
                     // No.
-                    Label { 
+                    Label {
                         text: (index + 1).toString()
                         color: Theme.text
                         font.pixelSize: Theme.smallFontPixelSize
@@ -78,7 +114,7 @@ Window {
                         Layout.preferredWidth: 40
                         Layout.alignment: Qt.AlignHCenter
                         onToggled: model.enabled = checked
-                        
+
                         indicator: Rectangle {
                             implicitWidth: 16
                             implicitHeight: 16
@@ -87,7 +123,7 @@ Window {
                             radius: 2
                             color: parent.checked ? Theme.accent : Theme.inputBackground
                             border.color: Theme.panelBorder
-                            
+
                             Text {
                                 anchors.centerIn: parent
                                 text: "✔"
@@ -100,30 +136,36 @@ Window {
 
                     // Source
                     Rectangle {
-                        Layout.preferredWidth: 60; Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Layout.fillHeight: true
                         Layout.margins: 4
                         color: model.sourceColor
                         border.color: Theme.panelBorder
                         border.width: 1
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                colorPicker.targetIndex = index
-                                colorPicker.targetRole = "source"
-                                colorPicker.setColor(model.sourceColor)
-                                colorPicker.show()
+                                colorPicker.targetIndex = index;
+                                colorPicker.targetRole = "source";
+                                colorPicker.setColor(model.sourceColor);
+                                colorPicker.show();
                             }
                         }
                     }
 
                     // Arrow
-                    Label { text: "→"; color: Theme.textDisabled; Layout.alignment: Qt.AlignHCenter }
+                    Label {
+                        text: "→"
+                        color: Theme.textDisabled
+                        Layout.alignment: Qt.AlignHCenter
+                    }
 
                     // Destination
                     Rectangle {
-                        Layout.preferredWidth: 60; Layout.fillHeight: true
+                        Layout.preferredWidth: 60
+                        Layout.fillHeight: true
                         Layout.margins: 4
                         color: model.destColor
                         border.color: Theme.panelBorder
@@ -133,31 +175,32 @@ Window {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                colorPicker.targetIndex = index
-                                colorPicker.targetRole = "target"
-                                colorPicker.setColor(model.destColor)
-                                colorPicker.show()
+                                colorPicker.targetIndex = index;
+                                colorPicker.targetRole = "target";
+                                colorPicker.setColor(model.destColor);
+                                colorPicker.show();
                             }
                         }
                     }
-                    
+
                     // Tolerance Input
                     SpinBox {
                         id: toleranceSpinBox
-                        from: 0; to: 100
+                        from: 0
+                        to: 100
                         value: model.tolerance
                         editable: true
                         Layout.preferredWidth: 80
                         Layout.preferredHeight: 30
-                        
+
                         onValueModified: {
                             if (linkToleranceBtn.checked) {
-                                app.colorSwapModel.setAllTolerance(value)
+                                app.colorSwapModel.setAllTolerance(value);
                             } else {
-                                model.tolerance = value
+                                model.tolerance = value;
                             }
                         }
-                        
+
                         // Custom visual style to match theme
                         contentItem: TextInput {
                             text: toleranceSpinBox.textFromValue(toleranceSpinBox.value, toleranceSpinBox.locale)
@@ -177,7 +220,9 @@ Window {
                         }
                     }
 
-                    Item { Layout.fillWidth: true } // Spacer
+                    Item {
+                        Layout.fillWidth: true
+                    } // Spacer
 
                     // Remove Button
                     Button {
@@ -189,7 +234,10 @@ Window {
                             radius: 2
                         }
                         contentItem: Text {
-                            text: parent.text; color: Theme.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                            text: parent.text
+                            color: Theme.text
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                         onClicked: app.colorSwapModel.removeSwap(index)
                     }
@@ -197,18 +245,20 @@ Window {
             }
         }
 
-        Divider { Layout.fillWidth: true }
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Link Tolerance Toggle (Footer)
         RowLayout {
             Layout.fillWidth: true
-            
+
             Button {
                 id: linkToleranceBtn
                 checkable: true
                 checked: true // Default to linked
                 text: checked ? qsTr("🔗 Link Tolerance (ON)") : qsTr("🔗 Link Tolerance (OFF)")
-                
+
                 background: Rectangle {
                     color: parent.checked ? Theme.selection : "transparent"
                     border.color: Theme.panelBorder
@@ -222,8 +272,10 @@ Window {
                     font.pixelSize: Theme.smallFontPixelSize
                 }
             }
-            
-            Item { Layout.fillWidth: true }
+
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
         // Actions
@@ -233,47 +285,51 @@ Window {
             spacing: 10
 
             StandardButton {
-                text: qsTr("+ Add New Pair")
+                text: qsTr("+ Add Pair")
                 Layout.fillWidth: true
-                onClicked: app.colorSwapModel.addSwap(Qt.rgba(1,0,0,1), Qt.rgba(0,1,0,1), 0)
+                onClicked: app.colorSwapModel.addSwap(Qt.rgba(1, 0, 0, 1), Qt.rgba(0, 1, 0, 1), 0)
             }
         }
-        
+
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
-            
+
             StandardButton {
                 text: qsTr("Apply (Current)")
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 onClicked: app.applyColorReplacement(false)
             }
             StandardButton {
-                text: qsTr("Apply (All Frames)")
+                text: qsTr("Apply All")
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 isAccent: true
                 onClicked: app.applyColorReplacement(true)
             }
         }
     }
 
-    PhotoshopColorPicker {
+    ColorPicker {
         id: colorPicker
-        onAccepted: (color) => {
+        onAccepted: color => {
             if (targetIndex >= 0) {
-                if (targetRole === "source") app.colorSwapModel.setSourceColor(targetIndex, color)
-                else if (targetRole === "target") app.colorSwapModel.setDestColor(targetIndex, color)
+                if (targetRole === "source")
+                    app.colorSwapModel.setSourceColor(targetIndex, color);
+                else if (targetRole === "target")
+                    app.colorSwapModel.setDestColor(targetIndex, color);
             }
         }
     }
 
     // Helper Components
-    component Divider : Rectangle {
+    component Divider: Rectangle {
         height: 1
         color: Theme.panelBorder
     }
 
-    component StandardButton : Button {
+    component StandardButton: Button {
         property bool isAccent: false
         background: Rectangle {
             color: parent.down ? Theme.buttonPressed : (parent.hovered ? Theme.buttonHover : (isAccent ? Theme.accent : Theme.buttonNormal))

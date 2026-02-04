@@ -6,19 +6,19 @@ import "../Theme.js" as Theme
 
 Window {
     id: root
-    width: 450
+    width: 600
     height: 400
     visible: false
-    title: qsTr("Alpha Check")
+    title: qsTr("Validate Alpha")
     color: Theme.background
     flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowCloseButtonHint
 
     property color markerColor: "red"
 
     // Prevent closing, just hide
-    onClosing: (close) => {
-        close.accepted = false
-        root.hide()
+    onClosing: close => {
+        close.accepted = false;
+        root.hide();
     }
 
     ColumnLayout {
@@ -28,13 +28,15 @@ Window {
 
         // Header
         Label {
-            text: qsTr("Alpha Channel Inspection")
+            text: qsTr("Validate Alpha")
             color: Theme.text
             font.pixelSize: Theme.fontPixelSize
             font.bold: true
         }
-        
-        Divider { Layout.fillWidth: true }
+
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Settings Grid
         GridLayout {
@@ -44,7 +46,7 @@ Window {
             columnSpacing: 10
 
             // Row 1: Indicator Color
-            Label { 
+            Label {
                 text: qsTr("Indicator Color:")
                 color: Theme.text
                 font.pixelSize: Theme.fontPixelSize
@@ -56,22 +58,37 @@ Window {
                 color: root.markerColor
                 border.color: Theme.panelBorder
                 border.width: 1
-                
+
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        colorPicker.setColor(root.markerColor)
-                        colorPicker.show()
+                        colorPicker.setColor(root.markerColor);
+                        colorPicker.show();
                     }
                 }
             }
-            Label { 
+            Label {
                 text: "(" + root.markerColor.toString() + ")"
                 color: Theme.textDisabled
                 font.pixelSize: Theme.smallFontPixelSize
                 Layout.fillWidth: true
             }
+        }
+
+        Item {
+            Layout.fillHeight: true
+        } // Spacer
+
+        Divider {
+            Layout.fillWidth: true
+        }
+
+        GridLayout {
+            columns: 3
+            Layout.fillWidth: true
+            rowSpacing: 15
+            columnSpacing: 10
 
             // Row 2: Crosshair Size
             Label {
@@ -118,9 +135,9 @@ Window {
             }
         }
 
-        Item { Layout.fillHeight: true } // Spacer
-
-        Divider { Layout.fillWidth: true }
+        Divider {
+            Layout.fillWidth: true
+        }
 
         // Action Buttons
         RowLayout {
@@ -128,39 +145,41 @@ Window {
             spacing: 10
 
             StandardButton {
-                text: qsTr("Check Current Frame")
+                text: qsTr("Check Current")
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 onClicked: {
-                    app.applyAlphaCheck(false, root.markerColor, sizeSlider.value, thicknessSlider.value)
+                    app.applyAlphaCheck(false, root.markerColor, sizeSlider.value, thicknessSlider.value);
                 }
             }
 
             StandardButton {
-                text: qsTr("Check Entire Sequence")
+                text: qsTr("Check All")
                 Layout.fillWidth: true
+                Layout.preferredWidth: 1
                 isAccent: true
                 onClicked: {
-                    app.applyAlphaCheck(true, root.markerColor, sizeSlider.value, thicknessSlider.value)
+                    app.applyAlphaCheck(true, root.markerColor, sizeSlider.value, thicknessSlider.value);
                 }
             }
         }
     }
 
-    PhotoshopColorPicker {
+    ColorPicker {
         id: colorPicker
         title: qsTr("Select Indicator Color")
-        onAccepted: (color) => {
-            root.markerColor = color
+        onAccepted: color => {
+            root.markerColor = color;
         }
     }
 
     // Helper Components (Standardized)
-    component Divider : Rectangle {
+    component Divider: Rectangle {
         height: 1
         color: Theme.panelBorder
     }
 
-    component StandardButton : Button {
+    component StandardButton: Button {
         property bool isAccent: false
         background: Rectangle {
             color: parent.down ? Theme.buttonPressed : (parent.hovered ? Theme.buttonHover : (isAccent ? Theme.accent : Theme.buttonNormal))
