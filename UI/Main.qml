@@ -104,10 +104,35 @@ ApplicationWindow {
                 spacing: 20
 
                 Label {
+                    id: statusLabel
                     text: app.statusMessage
                     color: Theme.text
                     font.pixelSize: Theme.smallFontPixelSize
-                    opacity: 0.7
+                    opacity: 0
+
+                    onTextChanged: {
+                        if (text !== "") {
+                            statusAnim.restart();
+                        }
+                    }
+
+                    SequentialAnimation {
+                        id: statusAnim
+                        PropertyAction {
+                            target: statusLabel
+                            property: "opacity"
+                            value: 1.0
+                        }
+                        PauseAnimation {
+                            duration: 3000
+                        }
+                        NumberAnimation {
+                            target: statusLabel
+                            property: "opacity"
+                            to: 0.0
+                            duration: 1000
+                        }
+                    }
                 }
 
                 Button {

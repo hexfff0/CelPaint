@@ -190,8 +190,21 @@ void AppController::addCustomColor(const QColor &color) {
 
 QList<QColor> AppController::customColors() const { return m_customColors; }
 
-void AppController::undo() { m_undoStack->undo(); }
-void AppController::redo() { m_undoStack->redo(); }
+void AppController::undo() {
+    if (m_undoStack->canUndo()) {
+        QString text = m_undoStack->undoText();
+        m_undoStack->undo();
+        setStatusMessage(QString("Undo: %1").arg(text));
+    }
+}
+
+void AppController::redo() {
+    if (m_undoStack->canRedo()) {
+        QString text = m_undoStack->redoText();
+        m_undoStack->redo();
+        setStatusMessage(QString("Redo: %1").arg(text));
+    }
+}
 bool AppController::canUndo() const { return m_undoStack->canUndo(); }
 bool AppController::canRedo() const { return m_undoStack->canRedo(); }
 
