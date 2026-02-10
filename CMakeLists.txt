@@ -12,7 +12,7 @@ if(MSVC)
     add_compile_options(/Zc:__cplusplus /permissive-)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick QuickControls2 Widgets)
 
 # Add subdirectories
 add_subdirectory(Core)
@@ -29,6 +29,7 @@ target_link_libraries(CelPaint PRIVATE
     Qt6::Gui
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::Widgets
     Core
     CelPaintUIplugin
 )

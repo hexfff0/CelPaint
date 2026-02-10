@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlExtensionPlugin>
@@ -14,7 +14,7 @@
 Q_IMPORT_QML_PLUGIN(CelPaint_UIPlugin)
 
 int main(int argc, char *argv[]) {
-  QGuiApplication app(argc, argv);
+  QApplication app(argc, argv);
 
   // Set application metadata
   app.setApplicationName("CelPaint");
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
 
 
-  QObject::connect(&engine, &QQmlApplicationEngine::quit, &app, &QGuiApplication::quit);
+  QObject::connect(&engine, &QQmlApplicationEngine::quit, &app, &QApplication::quit);
 
   if (engine.rootObjects().isEmpty()) {
     qCritical() << "Failed to load QML";

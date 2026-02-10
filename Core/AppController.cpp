@@ -12,6 +12,11 @@
 #include <QCoreApplication>
 #include <algorithm>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <shobjidl.h>
+#endif
+
 AppController::AppController(ImageSequence *sequence, QObject *parent)
     : QObject(parent), m_sequence(sequence),
       m_colorSwapModel(new ColorSwapModel(this)),
@@ -86,6 +91,76 @@ void AppController::openSequence(const QList<QUrl> &urls) {
   std::sort(paths.begin(), paths.end());
 
   m_sequence->loadSequence(paths);
+}
+
+void AppController::openFolderPicker() {
+  QStringList dirs;
+
+#ifdef Q_OS_WIN
+  // Use native Windows IFileOpenDialog for multi-folder selection
+  IFileOpenDialog *pDialog = nullptr;
+  HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr,
+                                CLSCTX_INPROC_SERVER, IID_IFileOpenDialog,
+                                reinterpret_cast<void **>(&pDialog));
+  if (SUCCEEDED(hr)) {
+    DWORD options = 0;
+    pDialog->GetOptions(&options);
+    pDialog->SetOptions(options | FOS_PICKFOLDERS | FOS_ALLOWMULTISELECT);
+    pDialog->SetTitle(L"Select Folders");
+
+    hr = pDialog->Show(nullptr);
+    if (SUCCEEDED(hr)) {
+      IShellItemArray *pItems = nullptr;
+      hr = pDialog->GetResults(&pItems);
+      if (SUCCEEDED(hr)) {
+        DWORD count = 0;
+        pItems->GetCount(&count);
+        for (DWORD i = 0; i < count; i++) {
+          IShellItem *pItem = nullptr;
+          pItems->GetItemAt(i, &pItem);
+          if (pItem) {
+            PWSTR path = nullptr;
+            pItem->GetDisplayName(SIGDN_FILESYSPATH, &path);
+            if (path) {
+              dirs.append(QString::fromWCharArray(path));
+              CoTaskMemFree(path);
+            }
+            pItem->Release();
+          }
+        }
+        pItems->Release();
+      }
+    }
+    pDialog->Release();
+  }
+#endif
+
+  if (dirs.isEmpty())
+    return;
+
+  QStringList imageFilters;
+  imageFilters << "*.png" << "*.jpg" << "*.jpeg" << "*.bmp"
+               << "*.tga" << "*.targa" << "*.tif" << "*.tiff";
+
+  QStringList allPaths;
+  for (const QString &dirPath : dirs) {
+    QDir dir(dirPath);
+    if (!dir.exists()) continue;
+
+    QStringList files = dir.entryList(imageFilters, QDir::Files, QDir::Name);
+    for (const QString &file : files) {
+      allPaths.append(dir.absoluteFilePath(file));
+    }
+  }
+
+  std::sort(allPaths.begin(), allPaths.end());
+
+  if (allPaths.isEmpty()) {
+    setStatusMessage("No image files found in selected folders.");
+    return;
+  }
+
+  m_sequence->loadSequence(allPaths);
 }
 
 bool AppController::saveSequence(const QUrl &folderUrl) {

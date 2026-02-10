@@ -70,9 +70,14 @@ Rectangle {
                 }
 
                 MenuItem {
-                    text: qsTr("Open Sequence...")
+                    text: qsTr("Open Files")
                     onTriggered: openSequenceTriggered()
                 }
+                MenuItem {
+                    text: qsTr("Open Folders")
+                    onTriggered: app.openFolderPicker()
+                }
+
                 MenuItem {
                     text: qsTr("Export")
                     onTriggered: exportTriggered()

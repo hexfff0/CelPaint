@@ -51,6 +51,7 @@ public:
 
   // QML invokable methods
   Q_INVOKABLE void openSequence(const QList<QUrl> &urls);
+  Q_INVOKABLE void openFolderPicker();
   Q_INVOKABLE bool saveSequence(const QUrl &folderUrl);
   Q_INVOKABLE void pickColorAt(int x, int y);
   Q_INVOKABLE QColor pickScreenColor(int x, int y);

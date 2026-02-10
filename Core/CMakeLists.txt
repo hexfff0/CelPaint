@@ -21,6 +21,11 @@ target_link_libraries(Core PUBLIC
     Qt6::Core
     Qt6::Gui
     Qt6::Quick
+    Qt6::Widgets
 )
 
 target_include_directories(Core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(WIN32)
+    target_link_libraries(Core PRIVATE ole32 shell32 uuid)
+endif()
